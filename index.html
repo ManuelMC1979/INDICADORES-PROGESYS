@@ -296,7 +296,7 @@ const FIELD_MAPS={
   feedback:{fecha:"fecha",hora:"hora",supervisor:"supervisor",rut:"rut",nombre:"nombre",tipo:"tipo",idr:"idr",tema:"tema",conclusiones:"conclusiones",resultado:"resultado",obs:"obs"},
   compromisos:{fecha:"fecha",rut:"rut",nombre:"nombre",supervisor:"supervisor",compromiso:"compromiso",fComp:"f_comp",fVenc:"f_venc",estado:"estado",evidencia:"evidencia",obs:"obs"},
   incidencias:{fecha:"fecha",rut:"rut",nombre:"nombre",tipo:"tipo",obs:"obs"},
-  outbound:{rut:"rut",nombre:"nombre",contactados:"contactados",noContactados:"no_contactados",pctContacto:"pct_contacto",obs:"obs"}
+  outbound:{rut:"rut",nombre:"nombre",contactados:"contactados",noContactados:"no_contactados",pendientes:"pendientes",retrasados:"retrasados",pctContacto:"pct_contacto",obs:"obs"}
 };
 const TABLE_KEY={ejecutivos:"ejecutivos",asistencia:"asistencia",kpi:"kpi",calidad:"calidad",epa:"epa",epaHist:"epa_historico",feedback:"feedback",compromisos:"compromisos",incidencias:"incidencias",outbound:"outbound"};
 function toDb(map,o){ const out={}; Object.entries(map).forEach(([k,col])=>{ out[col]=(o[k]===undefined?null:o[k]); }); return out; }
@@ -437,6 +437,9 @@ const mismoExec = (o,e) => keyOf(o.rut,o.nombre)===keyOf(e.rut,e.nombre);
 const num = v => { if(v===null||v===undefined||v==="")return null; if(typeof v==="number")return v; let s=String(v).replace("%","").replace(",",".").trim(); const n=parseFloat(s); return isNaN(n)?null:n; };
 const pct = v => v==null?"—":Math.round(v>1.5? v : v*100)+"%";
 const fx  = (v,d=1) => v==null?"—":(+v).toFixed(d).replace(/\.0$/,"");
+/* Formatea números enteros con separador de miles es-CL (ej. 3150 -> "3.150"). Los indicadores de
+   la matriz Outbound siempre se muestran sin decimales. */
+const nf  = v => v==null?"—":new Intl.NumberFormat("es-CL").format(Math.round(v));
 function excelDate(v){
   if(v===null||v===undefined||v==="") return "";
   if(typeof v==="number"){ const d=XLSX.SSF.parse_date_code(v); if(d) return `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`; }
@@ -471,8 +474,8 @@ const MODULES = [
   cols:[{k:"fecha",n:"Fecha",t:"date"},{k:"auditor",n:"Auditor"},{k:"supervisor",n:"Supervisor"},{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"tipo",n:"Tipo de auditoría"},{k:"puntaje",n:"Puntaje (0-100)",t:"n"},{k:"critico",n:"Error crítico",t:"sel",opts:["No","Sí"]},{k:"obs",n:"Observaciones"},{k:"estado",n:"Estado",t:"sel",opts:["Abierta","Cerrada"]}]},
  {id:"epa",ic:"◕", name:"EPA (mes actual)", grp:"DATOS", key:"epa", hidden:true,
   cols:[{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"e1snl",n:"EPA 1 SNL",t:"pct"},{k:"e2snl",n:"EPA 2 SNL",t:"pct"},{k:"e1ep",n:"EPA 1 EP",t:"pct"},{k:"e2ep",n:"EPA 2 EP",t:"pct"},{k:"transferencia",n:"Transferencia (%)",t:"pct"},{k:"obs",n:"Observaciones"},{k:"supervisor",n:"Supervisor"}]},
- {id:"outbound",ic:"☎", name:"Indicadores Outbound", grp:"DATOS", key:"outbound", hidden:true,
-  cols:[{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"contactados",n:"Contactados",t:"n"},{k:"noContactados",n:"No contactados",t:"n"},{k:"pctContacto",n:"% Contactado",t:"pct"},{k:"obs",n:"Observaciones"}]},
+ {id:"outbound",ic:"☎", name:"Indicadores Outbound", grp:"DATOS", key:"outbound",
+  cols:[{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"contactados",n:"Contactados",t:"n0"},{k:"noContactados",n:"No contactados",t:"n0"},{k:"pendientes",n:"Pendientes",t:"n0"},{k:"retrasados",n:"Casos retrasados",t:"n0"},{k:"pctContacto",n:"% Contactado",t:"pct"},{k:"obs",n:"Observaciones"}]},
  {id:"epaHist",ic:"◴", name:"EPA Histórico", grp:"DATOS", key:"epaHist", hidden:true,
   cols:[{k:"mes",n:"Mes",t:"date"},{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"e1snl",n:"EPA 1 SNL",t:"pct"},{k:"e2snl",n:"EPA 2 SNL",t:"pct"},{k:"e1ep",n:"EPA 1 EP",t:"pct"},{k:"e2ep",n:"EPA 2 EP",t:"pct"},{k:"supervisor",n:"Supervisor"},{k:"obs",n:"Observaciones"}]},
  {id:"turnos",ic:"▦", name:"Turnos del mes", grp:"DATOS", hidden:true},
@@ -552,7 +555,7 @@ async function importWB(wb, nombreArchivo){
     if(n.includes("calidad")){ S.calidad=mapRows(rows,{fecha:["fecha"],auditor:["auditor"],supervisor:["supervisor"],rut:["rut"],nombre:["nombre"],tipo:["tipodeauditoria","tipo"],puntaje:["puntaje0100","puntaje"],critico:["errorcritico"],obs:["observaciones"],estado:["estado"]},{fecha:"date",puntaje:"n"}); log.push(`Calidad (${S.calidad.length})`); return; }
     if(n.includes("epahistorico")||n.includes("historico")){ S.epaHist=mapRows(rows,{mes:["mes"],rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],supervisor:["supervisor"],obs:["observaciones"]},{mes:"date",e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n"}).filter(r=>r.rut); log.push(`EPA Histórico (${S.epaHist.length})`); return; }
     if(n==="epa"||n.startsWith("epa")){ S.epa=mapRows(rows,{rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],transferencia:["transferencia"],obs:["observaciones"],supervisor:["supervisorauto","supervisor"]},{e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n",transferencia:"n"}); log.push(`EPA (${S.epa.length})`); return; }
-    if(n.includes("outbound")){ S.outbound=mapRows(rows,{rut:["rut"],nombre:["nombre"],contactados:["contactados"],noContactados:["nocontactados"],pctContacto:["contacto"],obs:["observaciones"]},{contactados:"n",noContactados:"n",pctContacto:"n"}); log.push(`Outbound (${S.outbound.length})`); return; }
+    if(n.includes("outbound")){ S.outbound=mapRows(rows,{rut:["rut"],nombre:["nombre"],contactados:["contactados"],noContactados:["nocontactados"],pendientes:["pendientes"],retrasados:["casosretrasados","retrasados"],pctContacto:["contacto"],obs:["observaciones"]},{contactados:"n",noContactados:"n",pendientes:"n",retrasados:"n",pctContacto:"n"}); log.push(`Outbound (${S.outbound.length})`); return; }
     if(n.includes("feedback")||n.includes("escucha")){ S.feedback=mapRows(rows,{fecha:["fecha"],hora:["hora"],supervisor:["supervisor"],rut:["rut"],nombre:["nombre"],tipo:["tipo"],idr:["id"],tema:["tematratado","tema"],conclusiones:["conclusiones"],resultado:["resultado"],obs:["observaciones"]},{fecha:"date",hora:"time"}).filter(r=>r.fecha||r.nombre||r.tema); log.push(`Feedback (${S.feedback.length})`); return; }
     if(n.includes("compromiso")){ S.compromisos=mapRows(rows,{fecha:["fecha"],rut:["rut"],nombre:["nombre"],supervisor:["supervisor"],compromiso:["compromiso"],fComp:["fechacompromiso"],fVenc:["fechavencimiento"],estado:["estado"],evidencia:["evidencia"],obs:["observaciones"]},{fecha:"date",fComp:"date",fVenc:"date"}).filter(r=>r.fecha||r.nombre||r.compromiso); log.push(`Compromisos (${S.compromisos.length})`); return; }
     if(n.includes("incidencia")){ S.incidencias=mapRows(rows,{fecha:["fecha"],rut:["rut"],nombre:["nombre"],tipo:["tipo"],obs:["observaciones"]},{fecha:"date"}).filter(r=>r.fecha||r.rut||r.tipo); log.push(`Incidencias (${S.incidencias.length})`); return; }
@@ -824,9 +827,98 @@ function byExec(){
   const acc={};
   S.asistencia.forEach(r=>{ const k=keyOf(r.rut,r.nombre); (acc[k]=acc[k]||{adh:[],ban:[],atr:0,atrN:0}).adh.push(r.adh); acc[k].ban.push(r.banoMin); acc[k].atr+=r.atrasoMin??0; if((r.atrasoMin??0)>0)acc[k].atrN++; g(r.rut,r.nombre); });
   Object.entries(acc).forEach(([k,a])=>{ if(map[k]){ map[k].adh=avg(a.adh); map[k].banoMin=avg(a.ban); map[k].atrasoMin=a.atr; map[k].atrasosN=a.atrN; } });
-  S.kpi.forEach(r=>{ const o=g(r.rut,r.nombre); o.contact=r.contact; o.tmo=r.tmo; o.llamadas=r.llamadas; if(o.adh==null)o.adh=r.adh; });
-  S.epa.forEach(r=>{ const o=g(r.rut,r.nombre); o.e1snl=r.e1snl; o.e2snl=r.e2snl; o.e1ep=r.e1ep; o.e2ep=r.e2ep; });
+  S.kpi.forEach(r=>{ const o=g(r.rut,r.nombre); o.contact=r.contact; o.tmo=r.tmo; o.llamadas=r.llamadas; o.tipificaciones=r.tipificaciones; if(o.adh==null)o.adh=r.adh; });
+  S.epa.forEach(r=>{ const o=g(r.rut,r.nombre); o.e1snl=r.e1snl; o.e2snl=r.e2snl; o.e1ep=r.e1ep; o.e2ep=r.e2ep; o.transferenciaEpa=r.transferencia; });
+  S.outbound.forEach(r=>{ const o=g(r.rut,r.nombre);
+    o.pctContacto = r.pctContacto!=null? r.pctContacto : ((r.contactados!=null&&r.noContactados!=null&&(r.contactados+r.noContactados)>0)? r.contactados/(r.contactados+r.noContactados) : null); });
   return Object.values(map).filter(o=>o.nombre);
+}
+
+/* Totales globales de la matriz Outbound (suma de todas las filas por ejecutivo). Todos los
+   indicadores de este panel se muestran sin decimales (nf/pct ya redondean). */
+function metricsOutbound(){
+  const O=S.outbound||[];
+  const contactados=sum(O.map(r=>r.contactados));
+  const noContactados=sum(O.map(r=>r.noContactados));
+  const pendientes=sum(O.map(r=>r.pendientes));
+  const retrasados=sum(O.map(r=>r.retrasados));
+  const totalRegistros=contactados+noContactados+pendientes;
+  const base=contactados+noContactados;
+  const contactabilidad = base>0? contactados/base : null;
+  const ejecutivos=S.ejecutivos.filter(e=>/activo/i.test(e.estado)).length||O.length;
+  return {totalRegistros,contactados,noContactados,pendientes,retrasados,ejecutivos,contactabilidad};
+}
+/* Dona SVG (3 segmentos concéntricos con hueco entre cada uno) para Contactados/No Contactados/
+   Pendientes. Usa los mismos colores del semáforo ya establecido en toda la app (ok/bad/neutro). */
+function donutOutbound(K){
+  const R=54, C=2*Math.PI*R, total=K.totalRegistros||0;
+  const pA=total>0?K.contactados/total:0, pB=total>0?K.noContactados/total:0, pC=total>0?K.pendientes/total:0;
+  const gap=C*(2/360);
+  const arc=(start,frac)=>{ const len=C*frac; const s=len>gap*2? len-gap*2 : Math.max(len*0.5,0); return {dasharray:`${s} ${C-s}`, offset:-(C*start+gap)}; };
+  const A=arc(0,pA), B=arc(pA,pB), Cc=arc(pA+pB,pC);
+  return `<svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Contactados ${nf(K.contactados)}, No contactados ${nf(K.noContactados)}, Pendientes ${nf(K.pendientes)}">
+    <circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--bg)" stroke-width="16"/>
+    <circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--ok)" stroke-width="16" stroke-linecap="round"
+      stroke-dasharray="${A.dasharray}" stroke-dashoffset="${A.offset}" transform="rotate(-90 75 75)"><title>Contactados: ${nf(K.contactados)}</title></circle>
+    <circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--bad)" stroke-width="16" stroke-linecap="round"
+      stroke-dasharray="${B.dasharray}" stroke-dashoffset="${B.offset}" transform="rotate(-90 75 75)"><title>No contactados: ${nf(K.noContactados)}</title></circle>
+    <circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--ink-faint)" stroke-width="16" stroke-linecap="round"
+      stroke-dasharray="${Cc.dasharray}" stroke-dashoffset="${Cc.offset}" transform="rotate(-90 75 75)"><title>Pendientes: ${nf(K.pendientes)}</title></circle>
+    <text x="75" y="71" text-anchor="middle" font-size="21" font-weight="800" fill="var(--ink-strong)">${K.contactabilidad!=null?Math.round(K.contactabilidad*100):0}%</text>
+    <text x="75" y="88" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">contactados</text>
+  </svg>`;
+}
+function renderOutbound(el){
+  const m=MOD.outbound, K=metricsOutbound(), M=S.config.metas, meta=M.outbound;
+  const L=light(K.contactabilidad,meta,1);
+  const cumple = K.contactabilidad!=null && meta!=null && K.contactabilidad>=meta;
+  const faltan = (K.contactabilidad!=null&&meta!=null)? Math.max(0,Math.round((meta-K.contactabilidad)*100)) : null;
+  const pctBar = v => K.totalRegistros>0? Math.min(v/K.totalRegistros*100,100) : 0;
+  const leg=(cls,label,val)=>`<span style="display:flex;align-items:center;gap:8px;width:190px"><span class="dot ${cls}"></span>${label}<b style="margin-left:auto;color:var(--ink-strong)">${nf(val)}</b></span>`;
+  el.innerHTML=`
+  <div class="cards">
+    <div class="card"><div class="k">TOTAL REGISTROS</div><div class="v">${nf(K.totalRegistros)}</div><div class="m">En base de datos</div></div>
+    <div class="card" style="border-top-color:var(--ok)">
+      <div class="k">CONTACTADOS</div><div class="v" style="color:var(--ok)">${nf(K.contactados)}</div><div class="m">${K.contactabilidad!=null?Math.round(K.contactabilidad*100):0}% contactabilidad</div>
+      <div class="bar-track" style="height:5px;margin-top:7px"><div class="bar-fill" style="width:${pctBar(K.contactados)}%;background:var(--ok)"></div></div>
+    </div>
+    <div class="card" style="border-top-color:var(--bad)"><div class="k">NO CONTACTADOS</div><div class="v" style="color:var(--bad)">${nf(K.noContactados)}</div><div class="m">Sin contacto exitoso</div></div>
+    <div class="card">
+      <div class="k">PENDIENTES</div><div class="v">${nf(K.pendientes)}</div><div class="m">Sin gestionar aún</div>
+      <div class="bar-track" style="height:5px;margin-top:7px"><div class="bar-fill" style="width:${pctBar(K.pendientes)}%;background:var(--navy-3)"></div></div>
+    </div>
+    <div class="card"><div class="k">EJECUTIVOS</div><div class="v">${nf(K.ejecutivos)}</div><div class="m">Activos</div></div>
+    <div class="card" style="border-top-color:var(--bad)"><div class="k">CASOS RETRASADOS</div><div class="v" style="color:var(--bad)">${nf(K.retrasados)}</div><div class="m">Pendientes sin gestión</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <h2>Contactabilidad Global</h2>
+      <div style="text-align:center;padding:6px 0 2px">
+        <div style="font-size:42px;font-weight:800;color:${L==="V"?"var(--ok)":L==="A"?"var(--warn)":"var(--bad)"}">${K.contactabilidad!=null?Math.round(K.contactabilidad*100):0}%</div>
+        <div style="font-size:11px;letter-spacing:.1em;color:var(--ink-faint);font-weight:700">% CONTACTABILIDAD</div>
+        <div style="font-size:12.5px;font-weight:700;color:${cumple?"var(--ok)":"var(--bad)"};margin-top:8px">${cumple?"✓ Cumple la meta":`✗ Bajo la meta (faltan ${faltan}%)`}</div>
+      </div>
+      <div style="position:relative;margin-top:20px">
+        <div class="bar-track" style="height:10px"><div class="bar-fill" style="width:${K.contactabilidad!=null?Math.min(K.contactabilidad*100,100):0}%"></div></div>
+        ${meta!=null?`<div style="position:absolute;top:-4px;left:${Math.min(meta*100,100)}%;width:2px;height:18px;background:var(--ink-strong)"></div>`:""}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-faint);margin-top:5px">
+        <span>0%</span><span style="font-weight:700;color:var(--ink-strong)">META ${meta!=null?Math.round(meta*100):"—"}%</span><span>100%</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Distribución de Estados</h2>
+      <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;justify-content:center">
+        ${donutOutbound(K)}
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px">
+          ${leg("V","Contactados",K.contactados)}
+          ${leg("R","No Contactados",K.noContactados)}
+          ${leg("N","Pendientes",K.pendientes)}
+        </div>
+      </div>
+    </div>
+  </div>
+  ${tableSectionHTML(m)}`;
 }
 
 /* ════════════════════════ render genérico de módulos de datos ════════════════════════ */
@@ -835,15 +927,19 @@ function render(id){
   const m=MOD[id], el=document.getElementById("pg-"+id);
   if(id==="dashboard") return renderDash(el);
   if(id==="dashEjec")  return renderDashEjec(el);
+  if(id==="outbound")  return renderOutbound(el);
   if(id==="turnos")    return renderTurnos(el);
   if(id==="config")    return renderConfig(el);
   if(id==="instrucciones") return renderInstr(el);
   renderTable(el,m);
 }
-function renderTable(el,m){
+function renderTable(el,m){ el.innerHTML=tableSectionHTML(m); }
+/* Bloque de búsqueda + tabla editable, reutilizado tanto por los módulos genéricos (renderTable)
+   como por vistas con paneles propios encima, como Indicadores Outbound (renderOutbound). */
+function tableSectionHTML(m){
   const data=S[m.key]||[], q=(FILTERS[m.id]||"").toLowerCase();
   const rows=q? data.filter(r=>Object.values(r).some(v=>String(v??"").toLowerCase().includes(q))) : data;
-  el.innerHTML=`
+  return `
   <div class="panel">
     <h2>${m.name} <span style="font-weight:400;color:var(--ink-faint);font-size:12px">· ${data.length} registros</span></h2>
     <div class="toolbar">
@@ -871,6 +967,7 @@ function cellHTML(r,c,m){
   if(c.t==="n"){ if(c.k==="puntaje"&&v!=null){ const L=light(v,S.config.metas.calidad,1,0.05); return `<td class="num"><span class="pill ${L}">${fx(v,0)}</span></td>`; }
                  if(c.k==="tmo"&&v!=null){ const L=light(v,S.config.metas.tmo,-1,0.1); return `<td class="num"><span class="pill ${L}">${fx(v,0)}</span></td>`; }
                  return `<td class="num">${v==null?"—":fx(v,2).replace(/\.00$/,"")}</td>`; }
+  if(c.t==="n0") return `<td class="num">${nf(v)}</td>`;
   if(c.k==="estado"&&m.key==="compromisos"){ const map={Cumplido:"V","En proceso":"A",Vencido:"R"}; return `<td><span class="pill ${map[v]||"N"}">${v||"—"}</span></td>`; }
   if(c.k==="estado"&&m.key==="asistencia"){ return `<td><span class="pill ${v==="Puntual"?"V":v==="Atrasado"?"R":"N"}">${v||"—"}</span></td>`; }
   if(c.k==="cumple"){ return `<td><span class="pill ${v==="Cumple"?"V":v==="No cumple"?"R":"N"}">${v||"—"}</span></td>`; }
@@ -887,8 +984,8 @@ function openForm(id,idx=null){
       const v=r[c.k]??"";
       if(c.t==="sel") return `<div><label>${c.n}</label><select id="f_${c.k}">${c.opts.map(o=>`<option ${o===v?"selected":""}>${o}</option>`).join("")}</select></div>`;
       if(c.t==="rut"&&S.ejecutivos.length) return `<div><label>${c.n} (selecciona ejecutivo)</label><select id="f_${c.k}" onchange="autoName(this,'${id}')"><option value="">—</option>${ejOpts}</select><input type="hidden" id="fh_${c.k}" value="${v}"></div>`;
-      const t=c.t==="date"?"date":c.t==="time"?"time":(c.t==="n"||c.t==="pct")?"number":"text";
-      const step=c.t==="pct"?`step="0.01" min="0" max="1" placeholder="0.95"`:c.t==="n"?`step="any"`:"";
+      const t=c.t==="date"?"date":c.t==="time"?"time":(c.t==="n"||c.t==="n0"||c.t==="pct")?"number":"text";
+      const step=c.t==="pct"?`step="0.01" min="0" max="1" placeholder="0.95"`:c.t==="n0"?`step="1" min="0"`:c.t==="n"?`step="any"`:"";
       const val=c.t==="pct"&&v!==""?v:(v??"");
       return `<div><label>${c.n}${c.t==="pct"?" (0–1)":""}</label><input type="${t}" ${step} id="f_${c.k}" value="${val}"></div>`;
     }).join("")}
@@ -909,7 +1006,8 @@ function saveForm(id,idx){
   const m=MOD[id], o={};
   m.cols.forEach(c=>{ const el=document.getElementById("f_"+c.k); let v=el?el.value:"";
     if(c.t==="rut"&&el&&el.tagName==="SELECT"){ v=v?v.split("|")[0]:document.getElementById("fh_"+c.k).value; }
-    if(c.t==="n"||c.t==="pct") o[c.k]=v===""?null:parseFloat(v);
+    if(c.t==="n0") o[c.k]=v===""?null:Math.round(parseFloat(v));
+    else if(c.t==="n"||c.t==="pct") o[c.k]=v===""?null:parseFloat(v);
     else o[c.k]=clean(v); });
   if(idx===null) S[m.key].push(o); else S[m.key][idx]=o;
   save(); document.getElementById("form-"+id).innerHTML=""; render(id);
@@ -1142,6 +1240,9 @@ function renderDashEjec(el){
     ${card("EPA 1 EP",e.e1ep,M.epa1,1,pct0)} ${card("EPA 2 EP",e.e2ep,M.epa2,1,pct0)}
     ${card("TMO (seg)",e.tmo,M.tmo,-1,v=>fx(v,0))}
     ${card("Calidad prom.",avg(cal.map(r=>r.puntaje)),M.calidad,1,v=>fx(v))}
+    ${card("Tipificaciones",e.tipificaciones,M.tipificaciones,1,pct0)}
+    ${card("Outbound (% contactado)",e.pctContacto,M.outbound,1,pct0)}
+    ${card("Transferencia EPA",e.transferenciaEpa,M.transferenciaEpa,1,pct0)}
   </div>
   <div class="grid-2">
     <div class="panel"><h2>Asistencia del mes · ${asis.length} días</h2>
