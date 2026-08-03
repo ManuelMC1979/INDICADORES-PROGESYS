@@ -193,6 +193,7 @@ ol.instr b{color:var(--teal)}
     <a class="btn btn-ghost btn-sm" href="https://manuelmc1979.github.io/suite-callcenter/" style="text-decoration:none">🏠 Portal</a>
     <button class="btn btn-ghost btn-sm" id="themeBtn" onclick="toggleTema()">🌙 Modo oscuro</button>
     <label class="btn btn-teal filebtn" id="importWrap"><span id="importLabel">⬆ Importar Excel matriz</span><input type="file" id="fileInput" accept=".xlsx,.xls"></label>
+    <button class="btn btn-ghost btn-sm" id="exportWrap" onclick="exportarExcelCompleto()">⬇ Exportar Excel</button>
     <button class="btn btn-ghost btn-sm" onclick="hacerLogout()">Cerrar sesión</button>
   </header>
   <div id="pages"></div>
@@ -332,11 +333,13 @@ async function iniciarAppLogueada(){
   badge.innerHTML=`<b>${SESION.nombre||SESION.usuario}</b> · ${etiquetaRol} · Ingreso N° ${SESION.veces_ingreso||1}`;
   const importWrap=document.getElementById("importWrap");
   importWrap.style.display = SESION.rol==="ejecutivo" ? "none" : "";
+  const exportWrap=document.getElementById("exportWrap");
+  if(exportWrap) exportWrap.style.display = SESION.rol==="ejecutivo" ? "none" : "";
   buildNav();
   show(SESION.rol==="ejecutivo" ? "dashEjec" : "dashboard");
   const ok=await loadFromCloud(false);
   if(!ok) setCloudStatus("Sin conexión, usando datos locales",false);
-  if(SESION.rol!=="ejecutivo"){ await Promise.all([cargarHistorial(), cargarIngresosEquipo()]); }
+  if(SESION.rol!=="ejecutivo"){ await Promise.all([cargarHistorial(), cargarIngresosEquipo(), cargarHistorialMensual()]); }
   overlay.style.opacity="0";
   setTimeout(()=>{ overlay.style.display="none"; },250);
 }
@@ -545,6 +548,7 @@ function light(v, meta, dir=1, tol=0.03){
 const MODULES = [
  {id:"dashboard", ic:"◧", name:"Dashboard", grp:"PANELES"},
  {id:"dashEjec",  ic:"◔", name:"Dashboard Ejecutivo", grp:"PANELES"},
+ {id:"historialMensual", ic:"📅", name:"Historial Mensual", grp:"PANELES"},
  {id:"ejecutivos",ic:"⚉", name:"Ejecutivos", grp:"DATOS", key:"ejecutivos", hidden:true,
   cols:[{k:"rut",n:"Rut"},{k:"nombre",n:"Nombre completo"},{k:"supervisor",n:"Supervisor"},{k:"equipo",n:"Equipo"},{k:"cargo",n:"Cargo"},{k:"ingreso",n:"Fecha ingreso",t:"date"},{k:"jornada",n:"Jornada"},{k:"estado",n:"Estado",t:"sel",opts:["Activo","Inactivo","Vacaciones","Licencia"]},{k:"correo",n:"Correo"},{k:"telefono",n:"Teléfono"},{k:"obs",n:"Observaciones"}]},
  {id:"asistencia",ic:"◷", name:"Asistencia", grp:"DATOS", key:"asistencia", hidden:true,
@@ -915,6 +919,7 @@ function render(id){
   const m=MOD[id], el=document.getElementById("pg-"+id);
   if(id==="dashboard") return renderDash(el);
   if(id==="dashEjec")  return renderDashEjec(el);
+  if(id==="historialMensual") return renderHistorialMensual(el);
   if(id==="turnos")    return renderTurnos(el);
   if(id==="config")    return renderConfig(el);
   if(id==="instrucciones") return renderInstr(el);
@@ -1022,6 +1027,123 @@ async function guardarFichaEjecutivo(rutOriginal){
 }
 
 /* ════════════════════════ Dashboard general ════════════════════════ */
+/* ════════════════════════ exportar Excel completo ════════════════════════ */
+function exportarExcelCompleto(){
+  const wb=XLSX.utils.book_new();
+  const hojas=[
+    {key:"ejecutivos", name:"Ejecutivos", cols:["Rut","Nombre","Supervisor","Equipo","Cargo","Fecha ingreso","Jornada","Estado","Correo","Teléfono","Observaciones"], fields:["rut","nombre","supervisor","equipo","cargo","ingreso","jornada","estado","correo","telefono","obs"]},
+    {key:"asistencia", name:"Asistencia", cols:["Fecha","Rut","Nombre","Hora ingreso","Hora salida","Ini colación","Fin colación","Desc1 (min)","Desc2 (min)","Baño (min)","Baño (veces)","Cap (min)","Efectivo (hrs)","Min atraso","Min colación","Desc total","Desv turno","Turno","Estado","Salida ant","Adherencia","Obs"], fields:["fecha","rut","nombre","hIn","hOut","colIni","colFin","d1","d2","banoMin","banoVec","capMin","efectivo","atrasoMin","colMin","descTotal","desvTurno","turno","estado","salidaAnt","adh","obs"]},
+    {key:"kpi", name:"KPI_Mensual", cols:["Rut","Nombre","Llamadas","Saliente","TMO (seg)","Disponibilidad","Adherencia","Ocupación","Transferencias","Cumplimiento","Supervisor","Contactabilidad Out","Tipificaciones"], fields:["rut","nombre","llamadas","saliente","tmo","disp","adh","ocup","transf","cumple","supervisor","contact","tipificaciones"]},
+    {key:"calidad", name:"Calidad", cols:["Fecha","Auditor","Supervisor","Rut","Nombre","Tipo","Puntaje","Error crítico","Observaciones","Estado"], fields:["fecha","auditor","supervisor","rut","nombre","tipo","puntaje","critico","obs","estado"]},
+    {key:"epa", name:"EPA", cols:["Rut","Nombre","EPA1 SNL","EPA2 SNL","EPA1 EP","EPA2 EP","Transferencia","Obs","Supervisor"], fields:["rut","nombre","e1snl","e2snl","e1ep","e2ep","transferencia","obs","supervisor"]},
+    {key:"epaHist", name:"EPA_Historico", cols:["Mes","Rut","Nombre","EPA1 SNL","EPA2 SNL","EPA1 EP","EPA2 EP","Supervisor","Obs"], fields:["mes","rut","nombre","e1snl","e2snl","e1ep","e2ep","supervisor","obs"]},
+    {key:"outbound", name:"Outbound", cols:["Rut","Nombre","Contactados","No contactados","% Contacto","Obs"], fields:["rut","nombre","contactados","noContactados","pctContacto","obs"]},
+  ];
+  hojas.forEach(({key,name,cols,fields})=>{
+    const data=S[key]||[];
+    const aoa=[cols,...data.map(r=>fields.map(f=>r[f]??''))];
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),name);
+  });
+  const mesActual=new Date().toISOString().slice(0,7).replace("-","");
+  XLSX.writeFile(wb,`PROGESYS_backup_${mesActual}.xlsx`);
+  toast("Excel exportado correctamente");
+}
+
+/* ════════════════════════ cierre de mes y historial mensual ════════════════════════ */
+let HISTORIAL_MENSUAL=[];
+async function cargarHistorialMensual(){
+  if(!SB || !SESION || SESION.rol==='ejecutivo') return;
+  try{
+    const {data,error}=await SB.from("progesys_historial_mensual").select("*").order("mes",{ascending:false});
+    if(error) throw error;
+    HISTORIAL_MENSUAL=(data||[]);
+    if(CUR==="historialMensual") render("historialMensual");
+  }catch(e){ console.error("cargarHistorialMensual:",e); }
+}
+async function cerrarMesActual(){
+  if(!SB){ toast("Sin conexión"); return; }
+  const mesLabel = new Date().toLocaleDateString("es-CL",{month:"long",year:"numeric"});
+  if(!confirm(`¿Cerrar el mes actual (${mesLabel}) y guardar el resumen del equipo en el historial?`)) return;
+  const M=S.config.metas;
+  const mesPrimer = new Date(); mesPrimer.setDate(1); mesPrimer.setHours(0,0,0,0);
+  const mesStr = mesPrimer.toISOString().slice(0,10);
+  const execs=byExec();
+  const row={
+    mes: mesStr,
+    llamadas_total: S.kpi.reduce((s,r)=>s+(r.llamadas||0),0)||null,
+    atrasos_total: S.asistencia.filter(r=>(r.atrasoMin??0)>0).length||null,
+    atraso_min_total: S.asistencia.reduce((s,r)=>s+(r.atrasoMin||0),0)||null,
+    adherencia_prom: avg(execs.map(e=>e.adh)),
+    contactabilidad_prom: avg(S.kpi.map(r=>r.contact)),
+    epa1_snl_prom: avg(S.epa.map(r=>r.e1snl)),
+    epa2_snl_prom: avg(S.epa.map(r=>r.e2snl)),
+    epa1_ep_prom: avg(S.epa.map(r=>r.e1ep)),
+    epa2_ep_prom: avg(S.epa.map(r=>r.e2ep)),
+    calidad_prom: avg(S.calidad.map(r=>r.puntaje)),
+    tmo_prom: avg(S.kpi.map(r=>r.tmo)),
+    ejecutivos_n: S.ejecutivos.length,
+    notas: ""
+  };
+  try{
+    const {error}=await SB.from("progesys_historial_mensual").insert([row]);
+    if(error) throw error;
+    toast(`Mes ${mesLabel} cerrado y guardado en el historial`);
+    await cargarHistorialMensual();
+    show("historialMensual");
+  }catch(e){ toast("Error al cerrar el mes: "+e.message); }
+}
+
+/* ════════════════════════ renderHistorialMensual ════════════════════════ */
+function renderHistorialMensual(el){
+  const esCord=SESION&&SESION.rol!=="ejecutivo";
+  const fmt=v=>v==null?"—":Math.round(v*100)+"%";
+  const fmtN=v=>v==null?"—":Math.round(v).toLocaleString("es-CL");
+  const fmtMes=m=>{ if(!m)return"—"; const d=new Date(m); return d.toLocaleDateString("es-CL",{month:"long",year:"numeric",timeZone:"UTC"}); };
+  el.innerHTML=`
+  <div class="panel" style="background:linear-gradient(120deg,var(--navy) 0%,var(--navy-3) 70%,var(--teal) 160%);color:#fff">
+    <div style="font-size:11px;letter-spacing:.2em;color:var(--teal-2);font-weight:700">PROGESYS · HISTORIAL</div>
+    <div style="font-size:20px;font-weight:800;margin-top:4px">Resumen mensual del equipo</div>
+    <div style="font-size:12.5px;opacity:.75;margin-top:5px">${HISTORIAL_MENSUAL.length} meses registrados</div>
+  </div>
+  ${esCord?`
+  <div class="panel">
+    <h2>Cierre de mes</h2>
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Cierra el mes actual: guarda el resumen agregado del equipo (promedios y totales) en el historial, y exporta el Excel completo como respaldo antes de cargar el mes siguiente.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-teal" onclick="cerrarMesActual()">📅 Cerrar mes actual y guardar en historial</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportarExcelCompleto()">⬇ Exportar Excel de respaldo primero</button>
+    </div>
+  </div>`:``}
+  <div class="panel">
+    <h2>Historial de meses cerrados</h2>
+    ${HISTORIAL_MENSUAL.length?`
+    <div class="tblwrap" style="max-height:600px;overflow:auto"><table>
+      <thead><tr>
+        <th>Mes</th><th>Ejecutivos</th><th>Llamadas</th><th>Atrasos</th><th>Min. atraso</th>
+        <th>Adherencia</th><th>Contactabilidad</th>
+        <th>EPA1 SNL</th><th>EPA2 SNL</th><th>EPA1 EP</th><th>EPA2 EP</th>
+        <th>Calidad</th><th>TMO (seg)</th>
+      </tr></thead>
+      <tbody>
+      ${HISTORIAL_MENSUAL.map(r=>`<tr>
+        <td style="white-space:nowrap;font-weight:700">${fmtMes(r.mes)}</td>
+        <td class="num">${fmtN(r.ejecutivos_n)}</td>
+        <td class="num">${fmtN(r.llamadas_total)}</td>
+        <td class="num"><span class="pill ${r.atrasos_total>0?"A":"V"}">${fmtN(r.atrasos_total)}</span></td>
+        <td class="num">${fmtN(r.atraso_min_total)}</td>
+        <td class="num"><span class="pill ${light(r.adherencia_prom,S.config.metas.adherencia)}">${fmt(r.adherencia_prom)}</span></td>
+        <td class="num"><span class="pill ${light(r.contactabilidad_prom,S.config.metas.contactabilidad)}">${fmt(r.contactabilidad_prom)}</span></td>
+        <td class="num"><span class="pill ${light(r.epa1_snl_prom,S.config.metas.epa1)}">${fmt(r.epa1_snl_prom)}</span></td>
+        <td class="num"><span class="pill ${light(r.epa2_snl_prom,S.config.metas.epa2)}">${fmt(r.epa2_snl_prom)}</span></td>
+        <td class="num"><span class="pill ${light(r.epa1_ep_prom,S.config.metas.epa1)}">${fmt(r.epa1_ep_prom)}</span></td>
+        <td class="num"><span class="pill ${light(r.epa2_ep_prom,S.config.metas.epa2)}">${fmt(r.epa2_ep_prom)}</span></td>
+        <td class="num"><span class="pill ${light(r.calidad_prom,S.config.metas.calidad)}">${r.calidad_prom==null?"—":Math.round(r.calidad_prom)}</span></td>
+        <td class="num"><span class="pill ${light(r.tmo_prom,S.config.metas.tmo,-1)}">${r.tmo_prom==null?"—":Math.round(r.tmo_prom)}</span></td>
+      </tr>`).join("")}
+      </tbody>
+    </table></div>` : `<div class="empty">Aún no hay meses cerrados. Usa el botón "Cerrar mes actual" al terminar cada mes.</div>`}
+  </div>`;
+}
 function renderDash(el){
   const G=metricsGlobal(), execs=byExec(), M=S.config.metas;
   const IND=S.config.indicadores||{};
