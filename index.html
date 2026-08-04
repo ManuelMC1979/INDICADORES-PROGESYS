@@ -877,7 +877,9 @@ function exportAll(){
 const avg = a => { const v=a.filter(x=>x!=null&&!isNaN(x)); return v.length? v.reduce((s,x)=>s+x,0)/v.length : null; };
 const sum = a => a.filter(x=>x!=null&&!isNaN(x)).reduce((s,x)=>s+x,0);
 function metricsGlobal(){
-  const M=S.config.metas, A=S.asistencia, K=S.kpi, E=S.epa, O=S.outbound;
+  const M=S.config.metas, K=S.kpi, E=S.epa, O=S.outbound;
+  const mesActual=new Date().toISOString().slice(0,7);
+  const A=S.asistencia.filter(r=>String(r.fecha||"").slice(0,7)===mesActual);
   const adh = avg(A.map(r=>r.adh)) ?? avg(K.map(r=>r.adh));
   const atrasos=A.filter(r=>(r.atrasoMin??0)>0);
   const outboundPctRow = r => r.pctContacto!=null? r.pctContacto : ((r.contactados!=null&&r.noContactados!=null&&(r.contactados+r.noContactados)>0)? r.contactados/(r.contactados+r.noContactados) : null);
@@ -903,10 +905,11 @@ function metricsGlobal(){
 }
 function byExec(){
   const map={};
+  const mesActual=new Date().toISOString().slice(0,7);
   S.ejecutivos.forEach(e=>{ map[keyOf(e.rut,e.nombre)]={rut:e.rut,nombre:e.nombre,supervisor:e.supervisor,equipo:e.equipo,cargo:e.cargo,estado:e.estado}; });
   const g=(rut,nombre)=>{ const k=keyOf(rut,nombre); if(!map[k]) map[k]={rut:rut||"",nombre:nombre||""}; return map[k]; };
   const acc={};
-  S.asistencia.forEach(r=>{ const k=keyOf(r.rut,r.nombre); (acc[k]=acc[k]||{adh:[],ban:[],atr:0,atrN:0}).adh.push(r.adh); acc[k].ban.push(r.banoMin); acc[k].atr+=r.atrasoMin??0; if((r.atrasoMin??0)>0)acc[k].atrN++; g(r.rut,r.nombre); });
+  S.asistencia.filter(r=>String(r.fecha||"").slice(0,7)===mesActual).forEach(r=>{ const k=keyOf(r.rut,r.nombre); (acc[k]=acc[k]||{adh:[],ban:[],atr:0,atrN:0}).adh.push(r.adh); acc[k].ban.push(r.banoMin); acc[k].atr+=r.atrasoMin??0; if((r.atrasoMin??0)>0)acc[k].atrN++; g(r.rut,r.nombre); });
   Object.entries(acc).forEach(([k,a])=>{ if(map[k]){ map[k].adh=avg(a.adh); map[k].banoMin=avg(a.ban); map[k].atrasoMin=a.atr; map[k].atrasosN=a.atrN; } });
   S.kpi.forEach(r=>{ const o=g(r.rut,r.nombre); o.contact=r.contact; o.tmo=r.tmo; o.llamadas=r.llamadas; if(o.adh==null)o.adh=r.adh; });
   S.epa.forEach(r=>{ const o=g(r.rut,r.nombre); o.e1snl=r.e1snl; o.e2snl=r.e2snl; o.e1ep=r.e1ep; o.e2ep=r.e2ep; });
@@ -1274,8 +1277,9 @@ function renderDashEjec(el){
   else if(!SEL_EXEC || !execs.find(x=>x.nombre===SEL_EXEC)) SEL_EXEC = execs.length? execs[0].nombre : "";
   const e=execs.find(x=>x.nombre===SEL_EXEC)||{};
   const ficha=S.ejecutivos.find(x=>x.nombre===SEL_EXEC)||{};
-  const asis=S.asistencia.filter(r=>mismoExec(r,e));
-  const cal=S.calidad.filter(r=>mismoExec(r,e));
+  const mesActual=new Date().toISOString().slice(0,7); // "YYYY-MM"
+  const asis=S.asistencia.filter(r=>mismoExec(r,e) && String(r.fecha||"").slice(0,7)===mesActual);
+  const cal=S.calidad.filter(r=>mismoExec(r,e) && String(r.fecha||"").slice(0,7)===mesActual);
   const hist=S.epaHist.filter(r=>mismoExec(r,e)).sort((a,b)=>String(a.mes).localeCompare(String(b.mes)));
   const card=(n,v,meta,dir,f)=>{ const L=light(v,meta,dir); return `<div class="card"><div class="k">${n}<span class="dot ${L}"></span></div><div class="v">${f(v)}</div><div class="m">Meta ${dir===1&&meta<=1?pct0(meta):f(meta)}</div></div>`; };
   el.innerHTML=`
@@ -1347,7 +1351,7 @@ function renderDashEjec(el){
     ${card("Calidad prom.",avg(cal.map(r=>r.puntaje)),M.calidad,1,v=>fx(v))}
   </div>
   <div class="grid-2">
-    <div class="panel"><h2>Asistencia del mes · ${asis.length} días</h2>
+    <div class="panel"><h2>Asistencia · ${new Date().toLocaleDateString("es-CL",{month:"long",year:"numeric"})} · ${asis.length} días</h2>
       <div class="info-grid">
         <div class="cell"><div class="k">ATRASOS</div><div class="v">${asis.filter(r=>(r.atrasoMin??0)>0).length} (${fx(sum(asis.map(r=>r.atrasoMin)),0)} min)</div></div>
         <div class="cell"><div class="k">BAÑO PROM (MIN)</div><div class="v">${fx(avg(asis.map(r=>r.banoMin)))}</div></div>
