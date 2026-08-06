@@ -1347,7 +1347,7 @@ function renderDashEjec(el){
     ${card("Contactabilidad",e.contact,M.contactabilidad,1,pct0)}
     ${card("EPA 1 SNL",e.e1snl,M.epa1,1,pct0)} ${card("EPA 2 SNL",e.e2snl,M.epa2,1,pct0)}
     ${card("EPA 1 EP",e.e1ep,M.epa1,1,pct0)} ${card("EPA 2 EP",e.e2ep,M.epa2,1,pct0)}
-    ${card("TMO (seg)",e.tmo,M.tmo,-1,v=>fx(v,0))}
+    ${card("TMO (seg)",e.tmo>0?e.tmo:null,M.tmo,-1,v=>fx(v,0))}
     ${card("Calidad prom.",avg(cal.map(r=>r.puntaje)),M.calidad,1,v=>fx(v))}
   </div>
   <div class="grid-2">
