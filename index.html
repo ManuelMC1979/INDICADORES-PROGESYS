@@ -11,7 +11,7 @@
   --navy:#0B2545; --navy-2:#13315C; --navy-3:#1D4E89;
   --teal:#0FA3A3; --teal-2:#14B8A6; --teal-soft:#E0F5F3;
   --white:#FFFFFF; --bg:#F4F6F9; --line:#E3E8EF;
-  --ink:#0B2545; --ink-soft:#5B6B82; --ink-faint:#93A1B5; --ink-strong:#0B2545;
+  --ink:#0B2545; --ink-soft:#5B6B82; --ink-faint:#93A1B5;
   --ok:#1F9D55; --ok-bg:#E7F6EC; --warn:#C9880A; --warn-bg:#FCF3DC; --bad:#C0392B; --bad-bg:#FBE9E7;
   --radius:12px; --shadow:0 1px 3px rgba(11,37,69,.08),0 4px 14px rgba(11,37,69,.06);
 }
@@ -19,7 +19,7 @@
   --navy-2:#1B3E6B; --navy-3:#2A5A9C;
   --teal-soft:#0F2E30;
   --white:#141E2C; --bg:#0A1220; --line:#243044;
-  --ink:#E7ECF3; --ink-soft:#A8B4C6; --ink-faint:#71809A; --ink-strong:#EAF1FF;
+  --ink:#E7ECF3; --ink-soft:#A8B4C6; --ink-faint:#71809A;
   --ok-bg:#0F2A1B; --warn-bg:#332A0F; --bad-bg:#33150F;
   --shadow:0 1px 3px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.3);
 }
@@ -50,7 +50,7 @@ nav button .ic{width:17px;text-align:center;opacity:.85}
 /* ── Main ────────────────────────────── */
 main{flex:1;min-width:0;display:flex;flex-direction:column}
 header.top{background:var(--white);border-bottom:1px solid var(--line);padding:12px 26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
-header.top h1{font-size:17px;font-weight:700;color:var(--ink-strong)}
+header.top h1{font-size:17px;font-weight:700;color:var(--navy)}
 header.top .spacer{flex:1}
 .btn{display:inline-flex;align-items:center;gap:7px;border:none;border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:filter .15s}
 .btn:hover{filter:brightness(1.08)}
@@ -64,12 +64,12 @@ section.page.on{display:block}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:22px}
 .card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:15px 17px;border-top:3px solid var(--teal)}
 .card .k{font-size:11.5px;color:var(--ink-soft);font-weight:600;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center}
-.card .v{font-size:27px;font-weight:800;color:var(--ink-strong);margin:5px 0 2px}
+.card .v{font-size:27px;font-weight:800;color:var(--navy);margin:5px 0 2px}
 .card .m{font-size:11px;color:var(--ink-faint)}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 .dot.V{background:var(--ok)} .dot.A{background:var(--warn)} .dot.R{background:var(--bad)} .dot.N{background:var(--ink-faint)}
 .panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:20px}
-.panel h2{font-size:14px;font-weight:700;color:var(--ink-strong);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.panel h2{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .panel h2::before{content:"";width:4px;height:16px;background:var(--teal);border-radius:2px}
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .toolbar input[type=search]{flex:1;min-width:180px;max-width:340px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:var(--bg)}
@@ -92,42 +92,22 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .bar-row .lbl{width:130px;flex-shrink:0;color:var(--ink-soft);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-track{flex:1;height:14px;background:var(--bg);border-radius:99px;overflow:hidden}
 .bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-2));border-radius:99px}
-.bar-val{width:52px;text-align:right;font-weight:700;color:var(--ink-strong);font-variant-numeric:tabular-nums}
+.bar-val{width:52px;text-align:right;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:980px){.grid-2{grid-template-columns:1fr}aside{width:64px}.brand-name,.brand-sub,nav .grp,nav button .tx,.side-foot{display:none}nav button{justify-content:center;padding:11px 0}}
 .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
 .info-grid .cell{background:var(--bg);border-radius:9px;padding:10px 13px}
 .info-grid .cell .k{font-size:10.5px;color:var(--ink-faint);font-weight:700;letter-spacing:.05em}
-.info-grid .cell .v{font-size:14px;font-weight:700;color:var(--ink-strong);margin-top:2px}
+.info-grid .cell .v{font-size:14px;font-weight:700;color:var(--navy);margin-top:2px}
 .turn-cell{display:inline-block;width:26px;height:22px;line-height:22px;text-align:center;border-radius:5px;font-size:11px;font-weight:700}
 .tA{background:var(--teal-soft);color:var(--teal)} .tB{background:#E3EDF9;color:var(--navy-3)} .tC{background:#EFE9FB;color:#6B4EAE} .tD{background:var(--warn-bg);color:var(--warn)} .tV{background:var(--bg);color:var(--ink-faint)} .tX{background:var(--bad-bg);color:var(--bad)}
 #toast{position:fixed;bottom:22px;right:22px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;display:none;z-index:99;max-width:420px}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:10px}
-#dataLoadingOverlay{position:fixed;inset:0;z-index:50;background:rgba(244,246,249,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .25s}
-:root[data-theme="dark"] #dataLoadingOverlay{background:rgba(10,18,32,.92)}
-.spinner{width:42px;height:42px;border:4px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:girar .8s linear infinite}
-@keyframes girar{to{transform:rotate(360deg)}}
-#dataLoadingOverlay p{font-size:13.5px;color:var(--ink-soft);font-weight:600}
-.skel{background:linear-gradient(90deg,var(--bg) 25%,var(--line) 50%,var(--bg) 75%);background-size:200% 100%;animation:brillo 1.3s ease-in-out infinite;border-radius:8px}
-@keyframes brillo{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.ind-panel{padding:0}
-.ind-panel>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;gap:10px;font-weight:700;color:var(--ink-strong);font-size:14px;user-select:none}
-.ind-panel>summary::-webkit-details-marker{display:none}
-.ind-panel>summary::before{content:"";width:4px;height:16px;background:var(--teal);border-radius:2px;flex-shrink:0}
-.ind-count{font-weight:500;color:var(--ink-faint);font-size:12px}
-.ind-arrow{margin-left:auto;color:var(--ink-faint);transition:transform .15s;font-size:12px}
-.ind-panel[open] .ind-arrow{transform:rotate(90deg)}
-.ind-body{padding:2px 20px 18px}
-.ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px}
-.ind-chip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;transition:background .15s,border-color .15s,color .15s}
-.ind-chip:hover{border-color:var(--teal)}
-.ind-chip.on{background:var(--teal-soft);border-color:var(--teal);color:var(--ink-strong);font-weight:600}
-.ind-chip input{accent-color:var(--teal);width:14px;height:14px;flex-shrink:0}
 .legend span{display:flex;align-items:center;gap:6px}
 ol.instr{padding-left:22px;line-height:2;font-size:13.5px;color:var(--ink)}
 ol.instr b{color:var(--teal)}
 .filebtn input{display:none}
-#loginScreen,#cambiarClaveScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 55%,var(--teal) 220%)}
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 55%,var(--teal) 220%)}
 .login-card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);padding:36px 34px;width:340px;max-width:92vw}
 .login-card .brand{padding:0 0 20px;border:none;justify-content:center}
 .login-card h2{font-size:16px;color:var(--navy);text-align:center;margin-bottom:20px;font-weight:700}
@@ -136,7 +116,7 @@ ol.instr b{color:var(--teal)}
 .login-card .btn{width:100%;justify-content:center;margin-top:20px;padding:11px}
 .login-err{color:var(--bad);font-size:12.5px;margin-top:12px;text-align:center;min-height:16px}
 .user-badge{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
-.user-badge b{color:var(--ink-strong)}
+.user-badge b{color:var(--navy)}
 </style>
 </head>
 <body>
@@ -155,27 +135,7 @@ ol.instr b{color:var(--teal)}
     <div class="login-err" id="loginErr"></div>
   </div>
 </div>
-<div id="cambiarClaveScreen" style="display:none">
-  <div class="login-card">
-    <div class="brand">
-      <svg class="iso" viewBox="0 0 40 40"><path d="M6 4h13a11 11 0 0 1 0 22H14v10H6V4zm8 7v8h5a4 4 0 0 0 0-8h-5z" fill="#14B8A6"/><path d="M27 26l7 7-7 7v-4.5h-5v-5h5V26z" fill="#0FA3A3" opacity=".85"/></svg>
-      <div><div class="brand-name">PROGESYS</div><div class="brand-sub">CALL CENTER SUITE</div></div>
-    </div>
-    <h2>Crea tu nueva contraseña</h2>
-    <div style="font-size:12.5px;color:var(--ink-soft);text-align:center;margin-bottom:6px">Por seguridad, debes reemplazar la clave temporal antes de continuar.</div>
-    <label>Contraseña nueva</label>
-    <input type="password" id="nuevaClave1" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
-    <label>Repite la contraseña</label>
-    <input type="password" id="nuevaClave2" autocomplete="new-password" placeholder="••••••••">
-    <button class="btn btn-teal" id="cambiarClaveBtn" onclick="hacerCambioClaveObligatorio()">Guardar y continuar</button>
-    <div class="login-err" id="cambiarClaveErr"></div>
-  </div>
-</div>
 <div id="app" style="display:none">
-<div id="dataLoadingOverlay">
-  <div class="spinner"></div>
-  <p>Cargando tus indicadores…</p>
-</div>
 <aside>
   <div class="brand">
     <svg class="iso" viewBox="0 0 40 40"><path d="M6 4h13a11 11 0 0 1 0 22H14v10H6V4zm8 7v8h5a4 4 0 0 0 0-8h-5z" fill="#14B8A6"/><path d="M27 26l7 7-7 7v-4.5h-5v-5h5V26z" fill="#0FA3A3" opacity=".85"/></svg>
@@ -187,13 +147,12 @@ ol.instr b{color:var(--teal)}
 <main>
   <header class="top">
     <h1 id="pageTitle">Dashboard</h1>
+    <span id="lastSyncTime" style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:99px;background:var(--teal-soft);color:var(--teal);letter-spacing:.03em">Última sincronización: —</span>
     <span id="cloudStatus" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--bg);color:var(--ink-faint)">◌ Conectando…</span>
     <div class="spacer"></div>
     <span class="user-badge" id="userBadge"></span>
-    <a class="btn btn-ghost btn-sm" href="https://manuelmc1979.github.io/suite-callcenter/" style="text-decoration:none">🏠 Portal</a>
     <button class="btn btn-ghost btn-sm" id="themeBtn" onclick="toggleTema()">🌙 Modo oscuro</button>
     <label class="btn btn-teal filebtn" id="importWrap"><span id="importLabel">⬆ Importar Excel matriz</span><input type="file" id="fileInput" accept=".xlsx,.xls"></label>
-    <button class="btn btn-ghost btn-sm" id="exportWrap" onclick="exportarExcelCompleto()">⬇ Exportar Excel</button>
     <button class="btn btn-ghost btn-sm" onclick="hacerLogout()">Cerrar sesión</button>
   </header>
   <div id="pages"></div>
@@ -215,7 +174,7 @@ const DEFAULT_CONFIG = {
   ],
   indicadores:{adherencia:true,contactabilidad:true,e1snl:true,e1ep:true,e2snl:true,e2ep:true,calidad:true,tmo:true,
                banoMin:true,banoVec:true,descMin:true,colMin:true,atrasosN:true,atrasosMin:true,
-               tipificaciones:true,outboundPct:true,transferenciaEpa:true}
+               tipificaciones:true,transferenciaEpa:true}
 };
 /* Catálogo de indicadores del Dashboard: el Coordinador puede prender/apagar cuáles se muestran */
 const INDICADORES=[
@@ -225,7 +184,7 @@ const INDICADORES=[
   {k:"banoMin",n:"Baño (min prom)"},{k:"banoVec",n:"Baño (veces prom)"},
   {k:"descMin",n:"Descansos (min prom)"},{k:"colMin",n:"Colación (min prom)"},
   {k:"atrasosN",n:"Atrasos (cantidad)"},{k:"atrasosMin",n:"Atrasos (min total)"},
-  {k:"tipificaciones",n:"Tipificaciones"},{k:"outboundPct",n:"Outbound (% contactado)"},{k:"transferenciaEpa",n:"Transferencia EPA"}
+  {k:"tipificaciones",n:"Tipificaciones"},{k:"transferenciaEpa",n:"Transferencia EPA"}
 ];
 let S = {ejecutivos:[],asistencia:[],kpi:[],calidad:[],epa:[],epaHist:[],feedback:[],compromisos:[],incidencias:[],outbound:[],
          turnosMes:{titulo:"",dias:[],letras:[],filas:[]},config:JSON.parse(JSON.stringify(DEFAULT_CONFIG))};
@@ -277,40 +236,15 @@ async function hacerLogin(){
 async function cargarSesion(userId){
   const err=document.getElementById("loginErr");
   const {data:auth}=await SB.auth.getUser();
-  const {data,error}=await SB.from("progesys_usuarios").select("*").eq("id",userId).maybeSingle();
+  const {data,error}=await SB.from("usuarios").select("*").eq("id",userId).maybeSingle();
   if(error||!data){
     err.textContent="Tu usuario no tiene un perfil asignado en PROGESYS. Pide al coordinador que te agregue.";
     await SB.auth.signOut();
     return;
   }
-  SESION={id:data.id, usuario:emailAUsuario(auth?.user?.email||data.email), nombre:data.nombre, rol:data.rol, rut:data.rut, supervisor_nombre:data.supervisor_nombre, veces_ingreso:data.veces_ingreso??0, debe_cambiar_clave:!!data.debe_cambiar_clave};
-  try{ const {data:conteo,error:errRpc}=await SB.rpc("progesys_registrar_ingreso"); if(!errRpc && conteo!=null) SESION.veces_ingreso=conteo; }catch(e){ console.error("registrar_ingreso:",e); }
-  if(SESION.debe_cambiar_clave){
-    document.getElementById("loginScreen").style.display="none";
-    document.getElementById("cambiarClaveScreen").style.display="flex";
-    return;
-  }
+  SESION={id:data.id, usuario:emailAUsuario(auth?.user?.email||data.email), nombre:data.nombre, rol:data.rol, rut:data.rut, supervisor_nombre:data.supervisor_nombre, veces_ingreso:data.veces_ingreso??0};
+  try{ const {data:conteo,error:errRpc}=await SB.rpc("registrar_ingreso"); if(!errRpc && conteo!=null) SESION.veces_ingreso=conteo; }catch(e){ console.error("registrar_ingreso:",e); }
   await iniciarAppLogueada();
-}
-async function hacerCambioClaveObligatorio(){
-  const p1=document.getElementById("nuevaClave1").value;
-  const p2=document.getElementById("nuevaClave2").value;
-  const err=document.getElementById("cambiarClaveErr"), btn=document.getElementById("cambiarClaveBtn");
-  err.textContent="";
-  if(!p1||p1.length<6){ err.textContent="La contraseña debe tener al menos 6 caracteres."; return; }
-  if(p1!==p2){ err.textContent="Las dos contraseñas no coinciden."; return; }
-  btn.disabled=true; btn.textContent="Guardando…";
-  try{
-    const {error}=await SB.auth.updateUser({password:p1});
-    if(error) throw error;
-    await SB.rpc("progesys_marcar_clave_cambiada");
-    SESION.debe_cambiar_clave=false;
-    document.getElementById("cambiarClaveScreen").style.display="none";
-    document.getElementById("nuevaClave1").value=""; document.getElementById("nuevaClave2").value="";
-    await iniciarAppLogueada();
-    toast("Contraseña actualizada");
-  }catch(e){ err.textContent="No se pudo guardar: "+e.message; }
-  finally{ btn.disabled=false; btn.textContent="Guardar y continuar"; }
 }
 async function hacerLogout(){
   if(SB) await SB.auth.signOut();
@@ -319,29 +253,23 @@ async function hacerLogout(){
       turnosMes:{titulo:"",dias:[],letras:[],filas:[]},config:JSON.parse(JSON.stringify(DEFAULT_CONFIG))};
   document.getElementById("loginEmail").value=""; document.getElementById("loginPass").value="";
   document.getElementById("loginErr").textContent="";
-  document.getElementById("cambiarClaveScreen").style.display="none";
   document.getElementById("app").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
 }
 async function iniciarAppLogueada(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("app").style.display="flex";
-  const overlay=document.getElementById("dataLoadingOverlay");
-  overlay.style.display="flex"; overlay.style.opacity="1";
   const badge=document.getElementById("userBadge");
   const etiquetaRol={coordinador:"Coordinador",supervisor:"Supervisor",ejecutivo:"Ejecutivo"}[SESION.rol]||SESION.rol;
   badge.innerHTML=`<b>${SESION.nombre||SESION.usuario}</b> · ${etiquetaRol} · Ingreso N° ${SESION.veces_ingreso||1}`;
   const importWrap=document.getElementById("importWrap");
   importWrap.style.display = SESION.rol==="ejecutivo" ? "none" : "";
-  const exportWrap=document.getElementById("exportWrap");
-  if(exportWrap) exportWrap.style.display = SESION.rol==="ejecutivo" ? "none" : "";
+  updateSyncDisplay();
   buildNav();
   show(SESION.rol==="ejecutivo" ? "dashEjec" : "dashboard");
   const ok=await loadFromCloud(false);
   if(!ok) setCloudStatus("Sin conexión, usando datos locales",false);
-  if(SESION.rol!=="ejecutivo"){ await Promise.all([cargarHistorial(), cargarIngresosEquipo(), cargarHistorialMensual()]); }
-  overlay.style.opacity="0";
-  setTimeout(()=>{ overlay.style.display="none"; },250);
+  if(SESION.rol!=="ejecutivo") cargarHistorial();
 }
 document.getElementById("loginPass")?.addEventListener("keydown",e=>{ if(e.key==="Enter") hacerLogin(); });
 document.getElementById("loginEmail")?.addEventListener("keydown",e=>{ if(e.key==="Enter") hacerLogin(); });
@@ -359,7 +287,7 @@ const FIELD_MAPS={
   incidencias:{fecha:"fecha",rut:"rut",nombre:"nombre",tipo:"tipo",obs:"obs"},
   outbound:{rut:"rut",nombre:"nombre",contactados:"contactados",noContactados:"no_contactados",pctContacto:"pct_contacto",obs:"obs"}
 };
-const TABLE_KEY={ejecutivos:"progesys_ejecutivos",asistencia:"progesys_asistencia",kpi:"progesys_kpi",calidad:"progesys_calidad",epa:"progesys_epa",epaHist:"progesys_epa_historico",feedback:"progesys_feedback",compromisos:"progesys_compromisos",incidencias:"progesys_incidencias",outbound:"progesys_outbound"};
+const TABLE_KEY={ejecutivos:"ejecutivos",asistencia:"asistencia",kpi:"kpi",calidad:"calidad",epa:"epa",epaHist:"epa_historico",feedback:"feedback",compromisos:"compromisos",incidencias:"incidencias",outbound:"outbound"};
 function toDb(map,o){ const out={}; Object.entries(map).forEach(([k,col])=>{ out[col]=(o[k]===undefined?null:o[k]); }); return out; }
 function fromDb(map,row){ const out={}; Object.entries(map).forEach(([k,col])=>{ out[k]=row[col]; }); return out; }
 
@@ -371,16 +299,16 @@ function setCloudStatus(txt,ok){
 }
 
 async function pushConfig(){
-  await SB.from("progesys_config").delete().gt("id",0);
+  await SB.from("config").delete().gt("id",0);
   const rows=[
     ...Object.entries(S.config.metas).map(([k,v])=>({clave:"meta_"+k, valor:String(v)})),
     ...S.config.turnos.map(t=>({clave:"turno_"+t.t, valor:JSON.stringify(t)})),
     ...Object.entries(S.config.indicadores||{}).map(([k,v])=>({clave:"ind_"+k, valor:v?"1":"0"}))
   ];
-  if(rows.length){ const {error}=await SB.from("progesys_config").insert(rows); if(error) throw error; }
+  if(rows.length){ const {error}=await SB.from("config").insert(rows); if(error) throw error; }
 }
 async function pullConfig(){
-  const {data,error}=await SB.from("progesys_config").select("*"); if(error) throw error;
+  const {data,error}=await SB.from("config").select("*"); if(error) throw error;
   if(!S.config.indicadores) S.config.indicadores=JSON.parse(JSON.stringify(DEFAULT_CONFIG.indicadores));
   (data||[]).forEach(r=>{
     if(r.clave.startsWith("meta_")){ const k=r.clave.slice(5); const v=parseFloat(r.valor); if(!isNaN(v)) S.config.metas[k]=v; }
@@ -389,14 +317,14 @@ async function pullConfig(){
   });
 }
 async function pushTurnos(){
-  await SB.from("progesys_turnos_mes").delete().gt("id",0);
+  await SB.from("turnos_mes").delete().gt("id",0);
   const t=S.turnosMes; if(!t.filas.length) return;
   const rows=[];
   t.filas.forEach(f=>{ f.turnos.forEach((tv,i)=>{ rows.push({titulo:t.titulo, dia:t.dias[i], nombre:f.nombre, turno:tv}); }); });
-  if(rows.length){ const {error}=await SB.from("progesys_turnos_mes").insert(rows); if(error) throw error; }
+  if(rows.length){ const {error}=await SB.from("turnos_mes").insert(rows); if(error) throw error; }
 }
 async function pullTurnos(){
-  const {data,error}=await SB.from("progesys_turnos_mes").select("*"); if(error) throw error;
+  const {data,error}=await SB.from("turnos_mes").select("*"); if(error) throw error;
   if(!data||!data.length) return;
   const titulo=data[0].titulo||"";
   const dias=[...new Set(data.map(r=>r.dia))].sort((a,b)=>a-b);
@@ -422,9 +350,19 @@ async function syncToCloud(){
   try{
     for(const key of Object.keys(TABLE_KEY)) await syncTable(key);
     await pushConfig(); await pushTurnos();
+    const now=new Date();
+    const dateStr=now.toLocaleDateString("es-CL");
+    const timeStr=now.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+    try{ localStorage.setItem("progesys_lastSync",dateStr+" · "+timeStr); }catch(e){}
+    updateSyncDisplay();
     setCloudStatus("Conectado",true);
     toast("Datos subidos a la base de datos");
   }catch(e){ setCloudStatus("Error al subir",false); toast("Error al subir a la nube: "+e.message); }
+}
+function updateSyncDisplay(){
+  const el=document.getElementById("lastSyncTime");
+  if(!el) return;
+  try{ const lastSync=localStorage.getItem("progesys_lastSync"); el.textContent="Última sincronización: "+(lastSync||"—"); }catch(e){}
 }
 /* Descarga TODOS los módulos desde la nube (reemplaza los datos locales) */
 async function loadFromCloud(showToast){
@@ -437,7 +375,13 @@ async function loadFromCloud(showToast){
       S[key]=(data||[]).map(r=>fromDb(map,r));
     }
     await pullConfig(); await pullTurnos();
-    recalcAsistencia(); save(); render(CUR);
+    recalcAsistencia(); save(); 
+    const now=new Date();
+    const dateStr=now.toLocaleDateString("es-CL");
+    const timeStr=now.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+    try{ localStorage.setItem("progesys_lastSync",dateStr+" · "+timeStr); }catch(e){}
+    updateSyncDisplay();
+    render(CUR);
     setCloudStatus("Conectado",true);
     if(showToast) toast("Datos descargados de la base de datos");
     return true;
@@ -448,7 +392,7 @@ async function loadFromCloud(showToast){
 async function registrarHistorial(nombreArchivo, log){
   if(!SB) return;
   try{
-    await SB.from("progesys_historial_importaciones").insert([{
+    await SB.from("historial_importaciones").insert([{
       archivo: nombreArchivo||"(sin nombre)",
       resumen: log.join(" · "),
       ejecutivos_n: S.ejecutivos.length,
@@ -465,49 +409,11 @@ let HISTORIAL=[];
 async function cargarHistorial(){
   if(!SB) return;
   try{
-    const {data,error}=await SB.from("progesys_historial_importaciones").select("*").order("fecha_hora",{ascending:false}).limit(10);
+    const {data,error}=await SB.from("historial_importaciones").select("*").order("fecha_hora",{ascending:false}).limit(10);
     if(error) throw error;
     HISTORIAL=data||[];
     if(CUR==="dashboard") render("dashboard");
   }catch(e){ console.error("cargarHistorial:",e); }
-}
-let INGRESOS_EQUIPO=[];
-/* Trae cuántas veces ha entrado cada ejecutivo — Supabase filtra solo a quien corresponde
-   (Coordinador ve a todos, Supervisor solo a su equipo, gracias a la regla de la base de datos) */
-async function cargarIngresosEquipo(){
-  if(!SB || !SESION || SESION.rol==="ejecutivo") return;
-  try{
-    const {data,error}=await SB.from("progesys_usuarios").select("nombre,rol,rut,veces_ingreso,ultimo_ingreso").eq("rol","ejecutivo");
-    if(error) throw error;
-    INGRESOS_EQUIPO=(data||[]).sort((a,b)=>(b.veces_ingreso||0)-(a.veces_ingreso||0));
-    if(CUR==="dashboard") render("dashboard");
-  }catch(e){ console.error("cargarIngresosEquipo:",e); }
-}
-/* Descarga el detalle de CADA ingreso (fecha, hora, usuario, nombre, rol) en un Excel.
-   Supabase filtra automáticamente: Coordinador ve todo, Supervisor solo a su equipo. */
-async function exportarHistorialIngresos(){
-  if(!SB || !SESION || SESION.rol==="ejecutivo"){ toast("Esta exportación es solo para Coordinador o Supervisor."); return; }
-  try{
-    const {data,error}=await SB.from("progesys_historial_ingresos").select("*").order("fecha_hora",{ascending:false});
-    if(error) throw error;
-    if(!data||!data.length){ toast("Aún no hay ingresos registrados para exportar."); return; }
-    const filas=data.map(r=>{
-      const f=r.fecha_hora? new Date(r.fecha_hora) : null;
-      return {
-        "Usuario": emailAUsuario(r.usuario),
-        "Nombre": r.nombre||"",
-        "Rol": r.rol||"",
-        "Fecha": f? f.toLocaleDateString("es-CL") : "",
-        "Hora": f? f.toLocaleTimeString("es-CL") : ""
-      };
-    });
-    const ws=XLSX.utils.json_to_sheet(filas);
-    ws["!cols"]=[{wch:22},{wch:26},{wch:14},{wch:13},{wch:12}];
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,"Ingresos");
-    XLSX.writeFile(wb,"PROGESYS_historial_ingresos.xlsx");
-    toast("Historial de ingresos descargado");
-  }catch(e){ console.error("exportarHistorialIngresos:",e); toast("No se pudo exportar: "+e.message); }
 }
 function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._x); t._x=setTimeout(()=>t.style.display="none",3800); }
 function clearAll(){ if(confirm("¿Borrar todos los datos cargados en PROGESYS?")){ localStorage.removeItem("progesys_data"); location.reload(); } }
@@ -548,7 +454,6 @@ function light(v, meta, dir=1, tol=0.03){
 const MODULES = [
  {id:"dashboard", ic:"◧", name:"Dashboard", grp:"PANELES"},
  {id:"dashEjec",  ic:"◔", name:"Dashboard Ejecutivo", grp:"PANELES"},
- {id:"historialMensual", ic:"📅", name:"Historial Mensual", grp:"PANELES"},
  {id:"ejecutivos",ic:"⚉", name:"Ejecutivos", grp:"DATOS", key:"ejecutivos", hidden:true,
   cols:[{k:"rut",n:"Rut"},{k:"nombre",n:"Nombre completo"},{k:"supervisor",n:"Supervisor"},{k:"equipo",n:"Equipo"},{k:"cargo",n:"Cargo"},{k:"ingreso",n:"Fecha ingreso",t:"date"},{k:"jornada",n:"Jornada"},{k:"estado",n:"Estado",t:"sel",opts:["Activo","Inactivo","Vacaciones","Licencia"]},{k:"correo",n:"Correo"},{k:"telefono",n:"Teléfono"},{k:"obs",n:"Observaciones"}]},
  {id:"asistencia",ic:"◷", name:"Asistencia", grp:"DATOS", key:"asistencia", hidden:true,
@@ -877,12 +782,9 @@ function exportAll(){
 const avg = a => { const v=a.filter(x=>x!=null&&!isNaN(x)); return v.length? v.reduce((s,x)=>s+x,0)/v.length : null; };
 const sum = a => a.filter(x=>x!=null&&!isNaN(x)).reduce((s,x)=>s+x,0);
 function metricsGlobal(){
-  const M=S.config.metas, K=S.kpi, E=S.epa, O=S.outbound;
-  const mesActual=new Date().toISOString().slice(0,7);
-  const A=S.asistencia.filter(r=>String(r.fecha||"").slice(0,7)===mesActual);
+  const M=S.config.metas, A=S.asistencia, K=S.kpi, E=S.epa;
   const adh = avg(A.map(r=>r.adh)) ?? avg(K.map(r=>r.adh));
   const atrasos=A.filter(r=>(r.atrasoMin??0)>0);
-  const outboundPctRow = r => r.pctContacto!=null? r.pctContacto : ((r.contactados!=null&&r.noContactados!=null&&(r.contactados+r.noContactados)>0)? r.contactados/(r.contactados+r.noContactados) : null);
   return {
     adherencia:{v:adh, meta:M.adherencia, dir:1, f:pct},
     contactabilidad:{v:avg(K.map(r=>r.contact)), meta:M.contactabilidad, dir:1, f:pct},
@@ -899,17 +801,15 @@ function metricsGlobal(){
     calidad:{v:avg(S.calidad.map(r=>r.puntaje)), meta:M.calidad, dir:1, f:v=>fx(v)},
     tmo:{v:avg(K.map(r=>r.tmo)), meta:M.tmo, dir:-1, f:v=>fx(v,0)},
     tipificaciones:{v:avg(K.map(r=>r.tipificaciones)), meta:M.tipificaciones, dir:1, f:pct},
-    outboundPct:{v:avg(O.map(outboundPctRow)), meta:M.outbound, dir:1, f:pct},
     transferenciaEpa:{v:avg(E.map(r=>r.transferencia)), meta:M.transferenciaEpa, dir:1, f:pct}
   };
 }
 function byExec(){
   const map={};
-  const mesActual=new Date().toISOString().slice(0,7);
   S.ejecutivos.forEach(e=>{ map[keyOf(e.rut,e.nombre)]={rut:e.rut,nombre:e.nombre,supervisor:e.supervisor,equipo:e.equipo,cargo:e.cargo,estado:e.estado}; });
   const g=(rut,nombre)=>{ const k=keyOf(rut,nombre); if(!map[k]) map[k]={rut:rut||"",nombre:nombre||""}; return map[k]; };
   const acc={};
-  S.asistencia.filter(r=>String(r.fecha||"").slice(0,7)===mesActual).forEach(r=>{ const k=keyOf(r.rut,r.nombre); (acc[k]=acc[k]||{adh:[],ban:[],atr:0,atrN:0}).adh.push(r.adh); acc[k].ban.push(r.banoMin); acc[k].atr+=r.atrasoMin??0; if((r.atrasoMin??0)>0)acc[k].atrN++; g(r.rut,r.nombre); });
+  S.asistencia.forEach(r=>{ const k=keyOf(r.rut,r.nombre); (acc[k]=acc[k]||{adh:[],ban:[],atr:0,atrN:0}).adh.push(r.adh); acc[k].ban.push(r.banoMin); acc[k].atr+=r.atrasoMin??0; if((r.atrasoMin??0)>0)acc[k].atrN++; g(r.rut,r.nombre); });
   Object.entries(acc).forEach(([k,a])=>{ if(map[k]){ map[k].adh=avg(a.adh); map[k].banoMin=avg(a.ban); map[k].atrasoMin=a.atr; map[k].atrasosN=a.atrN; } });
   S.kpi.forEach(r=>{ const o=g(r.rut,r.nombre); o.contact=r.contact; o.tmo=r.tmo; o.llamadas=r.llamadas; if(o.adh==null)o.adh=r.adh; });
   S.epa.forEach(r=>{ const o=g(r.rut,r.nombre); o.e1snl=r.e1snl; o.e2snl=r.e2snl; o.e1ep=r.e1ep; o.e2ep=r.e2ep; });
@@ -922,7 +822,6 @@ function render(id){
   const m=MOD[id], el=document.getElementById("pg-"+id);
   if(id==="dashboard") return renderDash(el);
   if(id==="dashEjec")  return renderDashEjec(el);
-  if(id==="historialMensual") return renderHistorialMensual(el);
   if(id==="turnos")    return renderTurnos(el);
   if(id==="config")    return renderConfig(el);
   if(id==="instrucciones") return renderInstr(el);
@@ -1030,123 +929,6 @@ async function guardarFichaEjecutivo(rutOriginal){
 }
 
 /* ════════════════════════ Dashboard general ════════════════════════ */
-/* ════════════════════════ exportar Excel completo ════════════════════════ */
-function exportarExcelCompleto(){
-  const wb=XLSX.utils.book_new();
-  const hojas=[
-    {key:"ejecutivos", name:"Ejecutivos", cols:["Rut","Nombre","Supervisor","Equipo","Cargo","Fecha ingreso","Jornada","Estado","Correo","Teléfono","Observaciones"], fields:["rut","nombre","supervisor","equipo","cargo","ingreso","jornada","estado","correo","telefono","obs"]},
-    {key:"asistencia", name:"Asistencia", cols:["Fecha","Rut","Nombre","Hora ingreso","Hora salida","Ini colación","Fin colación","Desc1 (min)","Desc2 (min)","Baño (min)","Baño (veces)","Cap (min)","Efectivo (hrs)","Min atraso","Min colación","Desc total","Desv turno","Turno","Estado","Salida ant","Adherencia","Obs"], fields:["fecha","rut","nombre","hIn","hOut","colIni","colFin","d1","d2","banoMin","banoVec","capMin","efectivo","atrasoMin","colMin","descTotal","desvTurno","turno","estado","salidaAnt","adh","obs"]},
-    {key:"kpi", name:"KPI_Mensual", cols:["Rut","Nombre","Llamadas","Saliente","TMO (seg)","Disponibilidad","Adherencia","Ocupación","Transferencias","Cumplimiento","Supervisor","Contactabilidad Out","Tipificaciones"], fields:["rut","nombre","llamadas","saliente","tmo","disp","adh","ocup","transf","cumple","supervisor","contact","tipificaciones"]},
-    {key:"calidad", name:"Calidad", cols:["Fecha","Auditor","Supervisor","Rut","Nombre","Tipo","Puntaje","Error crítico","Observaciones","Estado"], fields:["fecha","auditor","supervisor","rut","nombre","tipo","puntaje","critico","obs","estado"]},
-    {key:"epa", name:"EPA", cols:["Rut","Nombre","EPA1 SNL","EPA2 SNL","EPA1 EP","EPA2 EP","Transferencia","Obs","Supervisor"], fields:["rut","nombre","e1snl","e2snl","e1ep","e2ep","transferencia","obs","supervisor"]},
-    {key:"epaHist", name:"EPA_Historico", cols:["Mes","Rut","Nombre","EPA1 SNL","EPA2 SNL","EPA1 EP","EPA2 EP","Supervisor","Obs"], fields:["mes","rut","nombre","e1snl","e2snl","e1ep","e2ep","supervisor","obs"]},
-    {key:"outbound", name:"Outbound", cols:["Rut","Nombre","Contactados","No contactados","% Contacto","Obs"], fields:["rut","nombre","contactados","noContactados","pctContacto","obs"]},
-  ];
-  hojas.forEach(({key,name,cols,fields})=>{
-    const data=S[key]||[];
-    const aoa=[cols,...data.map(r=>fields.map(f=>r[f]??''))];
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),name);
-  });
-  const mesActual=new Date().toISOString().slice(0,7).replace("-","");
-  XLSX.writeFile(wb,`PROGESYS_backup_${mesActual}.xlsx`);
-  toast("Excel exportado correctamente");
-}
-
-/* ════════════════════════ cierre de mes y historial mensual ════════════════════════ */
-let HISTORIAL_MENSUAL=[];
-async function cargarHistorialMensual(){
-  if(!SB || !SESION || SESION.rol==='ejecutivo') return;
-  try{
-    const {data,error}=await SB.from("progesys_historial_mensual").select("*").order("mes",{ascending:false});
-    if(error) throw error;
-    HISTORIAL_MENSUAL=(data||[]);
-    if(CUR==="historialMensual") render("historialMensual");
-  }catch(e){ console.error("cargarHistorialMensual:",e); }
-}
-async function cerrarMesActual(){
-  if(!SB){ toast("Sin conexión"); return; }
-  const mesLabel = new Date().toLocaleDateString("es-CL",{month:"long",year:"numeric"});
-  if(!confirm(`¿Cerrar el mes actual (${mesLabel}) y guardar el resumen del equipo en el historial?`)) return;
-  const M=S.config.metas;
-  const mesPrimer = new Date(); mesPrimer.setDate(1); mesPrimer.setHours(0,0,0,0);
-  const mesStr = mesPrimer.toISOString().slice(0,10);
-  const execs=byExec();
-  const row={
-    mes: mesStr,
-    llamadas_total: S.kpi.reduce((s,r)=>s+(r.llamadas||0),0)||null,
-    atrasos_total: S.asistencia.filter(r=>(r.atrasoMin??0)>0).length||null,
-    atraso_min_total: S.asistencia.reduce((s,r)=>s+(r.atrasoMin||0),0)||null,
-    adherencia_prom: avg(execs.map(e=>e.adh)),
-    contactabilidad_prom: avg(S.kpi.map(r=>r.contact)),
-    epa1_snl_prom: avg(S.epa.map(r=>r.e1snl)),
-    epa2_snl_prom: avg(S.epa.map(r=>r.e2snl)),
-    epa1_ep_prom: avg(S.epa.map(r=>r.e1ep)),
-    epa2_ep_prom: avg(S.epa.map(r=>r.e2ep)),
-    calidad_prom: avg(S.calidad.map(r=>r.puntaje)),
-    tmo_prom: avg(S.kpi.map(r=>r.tmo)),
-    ejecutivos_n: S.ejecutivos.length,
-    notas: ""
-  };
-  try{
-    const {error}=await SB.from("progesys_historial_mensual").insert([row]);
-    if(error) throw error;
-    toast(`Mes ${mesLabel} cerrado y guardado en el historial`);
-    await cargarHistorialMensual();
-    show("historialMensual");
-  }catch(e){ toast("Error al cerrar el mes: "+e.message); }
-}
-
-/* ════════════════════════ renderHistorialMensual ════════════════════════ */
-function renderHistorialMensual(el){
-  const esCord=SESION&&SESION.rol!=="ejecutivo";
-  const fmt=v=>v==null?"—":Math.round(v*100)+"%";
-  const fmtN=v=>v==null?"—":Math.round(v).toLocaleString("es-CL");
-  const fmtMes=m=>{ if(!m)return"—"; const d=new Date(m); return d.toLocaleDateString("es-CL",{month:"long",year:"numeric",timeZone:"UTC"}); };
-  el.innerHTML=`
-  <div class="panel" style="background:linear-gradient(120deg,var(--navy) 0%,var(--navy-3) 70%,var(--teal) 160%);color:#fff">
-    <div style="font-size:11px;letter-spacing:.2em;color:var(--teal-2);font-weight:700">PROGESYS · HISTORIAL</div>
-    <div style="font-size:20px;font-weight:800;margin-top:4px">Resumen mensual del equipo</div>
-    <div style="font-size:12.5px;opacity:.75;margin-top:5px">${HISTORIAL_MENSUAL.length} meses registrados</div>
-  </div>
-  ${esCord?`
-  <div class="panel">
-    <h2>Cierre de mes</h2>
-    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Cierra el mes actual: guarda el resumen agregado del equipo (promedios y totales) en el historial, y exporta el Excel completo como respaldo antes de cargar el mes siguiente.</p>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <button class="btn btn-teal" onclick="cerrarMesActual()">📅 Cerrar mes actual y guardar en historial</button>
-      <button class="btn btn-ghost btn-sm" onclick="exportarExcelCompleto()">⬇ Exportar Excel de respaldo primero</button>
-    </div>
-  </div>`:``}
-  <div class="panel">
-    <h2>Historial de meses cerrados</h2>
-    ${HISTORIAL_MENSUAL.length?`
-    <div class="tblwrap" style="max-height:600px;overflow:auto"><table>
-      <thead><tr>
-        <th>Mes</th><th>Ejecutivos</th><th>Llamadas</th><th>Atrasos</th><th>Min. atraso</th>
-        <th>Adherencia</th><th>Contactabilidad</th>
-        <th>EPA1 SNL</th><th>EPA2 SNL</th><th>EPA1 EP</th><th>EPA2 EP</th>
-        <th>Calidad</th><th>TMO (seg)</th>
-      </tr></thead>
-      <tbody>
-      ${HISTORIAL_MENSUAL.map(r=>`<tr>
-        <td style="white-space:nowrap;font-weight:700">${fmtMes(r.mes)}</td>
-        <td class="num">${fmtN(r.ejecutivos_n)}</td>
-        <td class="num">${fmtN(r.llamadas_total)}</td>
-        <td class="num"><span class="pill ${r.atrasos_total>0?"A":"V"}">${fmtN(r.atrasos_total)}</span></td>
-        <td class="num">${fmtN(r.atraso_min_total)}</td>
-        <td class="num"><span class="pill ${light(r.adherencia_prom,S.config.metas.adherencia)}">${fmt(r.adherencia_prom)}</span></td>
-        <td class="num"><span class="pill ${light(r.contactabilidad_prom,S.config.metas.contactabilidad)}">${fmt(r.contactabilidad_prom)}</span></td>
-        <td class="num"><span class="pill ${light(r.epa1_snl_prom,S.config.metas.epa1)}">${fmt(r.epa1_snl_prom)}</span></td>
-        <td class="num"><span class="pill ${light(r.epa2_snl_prom,S.config.metas.epa2)}">${fmt(r.epa2_snl_prom)}</span></td>
-        <td class="num"><span class="pill ${light(r.epa1_ep_prom,S.config.metas.epa1)}">${fmt(r.epa1_ep_prom)}</span></td>
-        <td class="num"><span class="pill ${light(r.epa2_ep_prom,S.config.metas.epa2)}">${fmt(r.epa2_ep_prom)}</span></td>
-        <td class="num"><span class="pill ${light(r.calidad_prom,S.config.metas.calidad)}">${r.calidad_prom==null?"—":Math.round(r.calidad_prom)}</span></td>
-        <td class="num"><span class="pill ${light(r.tmo_prom,S.config.metas.tmo,-1)}">${r.tmo_prom==null?"—":Math.round(r.tmo_prom)}</span></td>
-      </tr>`).join("")}
-      </tbody>
-    </table></div>` : `<div class="empty">Aún no hay meses cerrados. Usa el botón "Cerrar mes actual" al terminar cada mes.</div>`}
-  </div>`;
-}
 function renderDash(el){
   const G=metricsGlobal(), execs=byExec(), M=S.config.metas;
   const IND=S.config.indicadores||{};
@@ -1161,16 +943,14 @@ function renderDash(el){
     <div style="font-size:12.5px;opacity:.75;margin-top:5px">Ejecutivos activos: ${activos} · Registros de asistencia: ${S.asistencia.length} · Auditorías de calidad: ${S.calidad.length}</div>
   </div>
   ${esCoordinador? `
-  <details class="panel ind-panel" ${INDICADORES_PANEL_ABIERTO?"open":""} ontoggle="INDICADORES_PANEL_ABIERTO=this.open">
-    <summary>Configurar indicadores <span class="ind-count">${INDICADORES.filter(i=>IND[i.k]!==false).length}/${INDICADORES.length} activos</span><span class="ind-arrow">▸</span></summary>
-    <div class="ind-body">
-      <div class="ind-grid">
-        ${INDICADORES.map(i=>`<label class="ind-chip ${IND[i.k]!==false?"on":""}">
-          <input type="checkbox" ${IND[i.k]!==false?"checked":""} onchange="toggleIndicador('${i.k}',this.checked);this.closest('label').classList.toggle('on',this.checked)"><span>${i.n}</span>
-        </label>`).join("")}
-      </div>
+  <div class="panel">
+    <h2>Configurar indicadores</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">
+      ${INDICADORES.map(i=>`<label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft);cursor:pointer">
+        <input type="checkbox" ${IND[i.k]!==false?"checked":""} onchange="toggleIndicador('${i.k}',this.checked)"> ${i.n}
+      </label>`).join("")}
     </div>
-  </details>` : ""}
+  </div>` : ""}
   <div class="cards">
     ${card("adherencia","Adherencia",G.adherencia)} ${card("contactabilidad","Contactabilidad",G.contactabilidad)}
     ${card("e1snl","EPA 1 SNL",G.e1snl)} ${card("e1ep","EPA 1 EP",G.e1ep)}
@@ -1178,7 +958,7 @@ function renderDash(el){
     ${card("calidad","Calidad (prom.)",G.calidad)} ${card("tmo","TMO prom. (seg)",G.tmo)}
   </div>
   <div class="cards">
-    ${card("tipificaciones","Tipificaciones",G.tipificaciones)} ${card("outboundPct","Outbound (% contactado)",G.outboundPct)}
+    ${card("tipificaciones","Tipificaciones",G.tipificaciones)}
     ${card("transferenciaEpa","Transferencia EPA",G.transferenciaEpa)}
   </div>
   <div class="cards">
@@ -1198,23 +978,13 @@ function renderDash(el){
         ${rank.map((x,i)=>`<tr><td style="font-size:18px">${medallas[i]}</td><td>${x.nombre}</td>
           <td class="num"><span class="pill ${light(x.e1snl,M.epa1)}">${pct(x.e1snl)}</span></td>
           <td class="num"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
-          <td class="num" style="font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
+          <td class="num" style="font-weight:800;color:var(--navy)">${pct(x.score)}</td></tr>`).join("")}
       </tbody></table></div>`;
     })()}
   </div>
   <div class="panel"><h2>Historial EPA · últimos 6 meses por ejecutivo (SNL y EP)</h2>
     ${tablaEpaHistPorEjecutivo()}
-  </div>
-  ${(SESION && SESION.rol!=="ejecutivo")? `
-  <details class="panel ind-panel" ${INGRESOS_PANEL_ABIERTO?"open":""} ontoggle="INGRESOS_PANEL_ABIERTO=this.open">
-    <summary>Ingresos al programa por ejecutivo <span class="ind-count">${INGRESOS_EQUIPO.length} ejecutivos</span><span class="ind-arrow">▸</span></summary>
-    <div class="ind-body">
-      <div style="margin-bottom:12px"><button class="btn btn-teal btn-sm" onclick="exportarHistorialIngresos()">⬇ Exportar historial detallado (Excel: usuario, fecha y hora)</button></div>
-      ${INGRESOS_EQUIPO.length? `<div class="tblwrap"><table><thead><tr><th>Ejecutivo</th><th>Veces que ha ingresado</th><th>Último ingreso</th></tr></thead><tbody>
-        ${INGRESOS_EQUIPO.map(u=>`<tr><td>${u.nombre||"—"}</td><td class="num">${u.veces_ingreso??0}</td><td>${u.ultimo_ingreso? new Date(u.ultimo_ingreso).toLocaleString("es-CL"):"Nunca"}</td></tr>`).join("")}
-      </tbody></table></div>` : `<div class="empty">Aún no hay datos de ingreso de ejecutivos (o todavía nadie de tu equipo ha entrado a PROGESYS).</div>`}
-    </div>
-  </details>` : ""}`;
+  </div>`;
 }
 /* Gráfico de línea (SVG, sin librerías externas) del promedio global de EPA SNL (e1snl+e2snl)
    y EPA EP (e1ep+e2ep) por mes, usando los últimos 6 meses disponibles en EPA_Historico. */
@@ -1256,8 +1026,6 @@ function bars(execs,key,meta){
 }
 
 /* ════════════════════════ Dashboard Ejecutivo ════════════════════════ */
-let INDICADORES_PANEL_ABIERTO=false;
-let INGRESOS_PANEL_ABIERTO=false;
 let SEL_EXEC="";
 let PERFIL="coordinador", SEL_SUPERVISOR="";
 function renderDashEjec(el){
@@ -1277,9 +1045,8 @@ function renderDashEjec(el){
   else if(!SEL_EXEC || !execs.find(x=>x.nombre===SEL_EXEC)) SEL_EXEC = execs.length? execs[0].nombre : "";
   const e=execs.find(x=>x.nombre===SEL_EXEC)||{};
   const ficha=S.ejecutivos.find(x=>x.nombre===SEL_EXEC)||{};
-  const mesActual=new Date().toISOString().slice(0,7); // "YYYY-MM"
-  const asis=S.asistencia.filter(r=>mismoExec(r,e) && String(r.fecha||"").slice(0,7)===mesActual);
-  const cal=S.calidad.filter(r=>mismoExec(r,e) && String(r.fecha||"").slice(0,7)===mesActual);
+  const asis=S.asistencia.filter(r=>mismoExec(r,e));
+  const cal=S.calidad.filter(r=>mismoExec(r,e));
   const hist=S.epaHist.filter(r=>mismoExec(r,e)).sort((a,b)=>String(a.mes).localeCompare(String(b.mes)));
   const card=(n,v,meta,dir,f)=>{ const L=light(v,meta,dir); return `<div class="card"><div class="k">${n}<span class="dot ${L}"></span></div><div class="v">${f(v)}</div><div class="m">Meta ${dir===1&&meta<=1?pct0(meta):f(meta)}</div></div>`; };
   el.innerHTML=`
@@ -1316,10 +1083,10 @@ function renderDashEjec(el){
   <div class="panel"><h2>Información del ejecutivo</h2>
     ${puedeEditar && !previsualizando ? `
     <div class="info-grid" id="fichaEditable">
-      <div class="cell"><div class="k">NOMBRE</div><input id="ed_nombre" value="${ficha.nombre||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--ink-strong)"></div>
-      <div class="cell"><div class="k">RUT</div><input id="ed_rut" value="${ficha.rut||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--ink-strong)"></div>
-      <div class="cell"><div class="k">TELÉFONO</div><input id="ed_telefono" value="${ficha.telefono||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--ink-strong)"></div>
-      <div class="cell"><div class="k">CORREO</div><input id="ed_correo" value="${ficha.correo||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--ink-strong)"></div>
+      <div class="cell"><div class="k">NOMBRE</div><input id="ed_nombre" value="${ficha.nombre||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--navy)"></div>
+      <div class="cell"><div class="k">RUT</div><input id="ed_rut" value="${ficha.rut||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--navy)"></div>
+      <div class="cell"><div class="k">TELÉFONO</div><input id="ed_telefono" value="${ficha.telefono||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--navy)"></div>
+      <div class="cell"><div class="k">CORREO</div><input id="ed_correo" value="${ficha.correo||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--navy)"></div>
       <div class="cell"><div class="k">SUPERVISOR</div><div class="v">${ficha.supervisor||"—"}</div></div>
       <div class="cell"><div class="k">EQUIPO</div><div class="v">${ficha.equipo||"—"}</div></div>
       <div class="cell"><div class="k">CARGO</div><div class="v">${ficha.cargo||"—"}</div></div>
@@ -1347,11 +1114,11 @@ function renderDashEjec(el){
     ${card("Contactabilidad",e.contact,M.contactabilidad,1,pct0)}
     ${card("EPA 1 SNL",e.e1snl,M.epa1,1,pct0)} ${card("EPA 2 SNL",e.e2snl,M.epa2,1,pct0)}
     ${card("EPA 1 EP",e.e1ep,M.epa1,1,pct0)} ${card("EPA 2 EP",e.e2ep,M.epa2,1,pct0)}
-    ${card("TMO (seg)",e.tmo>0?e.tmo:null,M.tmo,-1,v=>fx(v,0))}
+    ${card("TMO (seg)",e.tmo,M.tmo,-1,v=>fx(v,0))}
     ${card("Calidad prom.",avg(cal.map(r=>r.puntaje)),M.calidad,1,v=>fx(v))}
   </div>
   <div class="grid-2">
-    <div class="panel"><h2>Asistencia · ${new Date().toLocaleDateString("es-CL",{month:"long",year:"numeric"})} · ${asis.length} días</h2>
+    <div class="panel"><h2>Asistencia del mes · ${asis.length} días</h2>
       <div class="info-grid">
         <div class="cell"><div class="k">ATRASOS</div><div class="v">${asis.filter(r=>(r.atrasoMin??0)>0).length} (${fx(sum(asis.map(r=>r.atrasoMin)),0)} min)</div></div>
         <div class="cell"><div class="k">BAÑO PROM (MIN)</div><div class="v">${fx(avg(asis.map(r=>r.banoMin)))}</div></div>
