@@ -353,8 +353,18 @@ async function syncTable(key){
   if(!SB) return;
   try{
     const table=TABLE_KEY[key], map=FIELD_MAPS[key], arr=S[key]||[];
-    await SB.from(table).delete().gt("id",0);
-    if(arr.length){ const {error}=await SB.from(table).insert(arr.map(o=>toDb(map,o))); if(error) throw error; }
+    if(arr.length){
+      /* Inserta primero y borra los registros viejos recién después de que la inserción
+         resulte exitosa — así, si la inserción falla (p.ej. columnas que no existen en la
+         tabla), no se pierde lo que ya había en la nube. */
+      const {data:antes}=await SB.from(table).select("id").order("id",{ascending:false}).limit(1);
+      const maxIdAntes=antes&&antes.length? antes[0].id : 0;
+      const {error}=await SB.from(table).insert(arr.map(o=>toDb(map,o)));
+      if(error) throw error;
+      await SB.from(table).delete().gt("id",0).lte("id",maxIdAntes);
+    }else{
+      await SB.from(table).delete().gt("id",0);
+    }
   }catch(e){ console.error(e); toast("No se pudo sincronizar con la nube: "+e.message); }
 }
 /* Sube TODOS los módulos a la nube */
