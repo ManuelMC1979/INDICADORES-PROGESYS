@@ -102,6 +102,19 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .turn-cell{display:inline-block;width:26px;height:22px;line-height:22px;text-align:center;border-radius:5px;font-size:11px;font-weight:700}
 .tA{background:var(--teal-soft);color:var(--teal)} .tB{background:#E3EDF9;color:var(--navy-3)} .tC{background:#EFE9FB;color:#6B4EAE} .tD{background:var(--warn-bg);color:var(--warn)} .tV{background:var(--bg);color:var(--ink-faint)} .tX{background:var(--bad-bg);color:var(--bad)}
 #toast{position:fixed;bottom:22px;right:22px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;display:none;z-index:99;max-width:420px}
+.ind-panel{padding:0}
+.ind-panel>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;gap:10px;font-weight:700;color:var(--navy);font-size:14px;user-select:none}
+.ind-panel>summary::-webkit-details-marker{display:none}
+.ind-panel>summary::before{content:"";width:4px;height:16px;background:var(--teal);border-radius:2px;flex-shrink:0}
+.ind-count{font-weight:500;color:var(--ink-faint);font-size:12px}
+.ind-arrow{margin-left:auto;color:var(--ink-faint);transition:transform .15s;font-size:12px}
+.ind-panel[open] .ind-arrow{transform:rotate(90deg)}
+.ind-body{padding:2px 20px 18px}
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px}
+.ind-chip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;transition:background .15s,border-color .15s,color .15s}
+.ind-chip:hover{border-color:var(--teal)}
+.ind-chip.on{background:var(--teal-soft);border-color:var(--teal);color:var(--navy);font-weight:600}
+.ind-chip input{accent-color:var(--teal);width:14px;height:14px;flex-shrink:0}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:10px}
 .legend span{display:flex;align-items:center;gap:6px}
 ol.instr{padding-left:22px;line-height:2;font-size:13.5px;color:var(--ink)}
@@ -242,8 +255,8 @@ async function cargarSesion(userId){
     await SB.auth.signOut();
     return;
   }
-  SESION={id:data.id, usuario:emailAUsuario(auth?.user?.email||data.email), nombre:data.nombre, rol:data.rol, rut:data.rut, supervisor_nombre:data.supervisor_nombre, veces_ingreso:data.veces_ingreso??0};
-  try{ const {data:conteo,error:errRpc}=await SB.rpc("registrar_ingreso"); if(!errRpc && conteo!=null) SESION.veces_ingreso=conteo; }catch(e){ console.error("registrar_ingreso:",e); }
+  SESION={id:data.id, usuario:emailAUsuario(auth?.user?.email||data.email), nombre:data.nombre, rol:data.rol, rut:data.rut, supervisor_nombre:data.supervisor_nombre, veces_ingreso:data.veces_ingreso??0, ultima_conexion:data.ultima_conexion||null};
+  try{ const {data:conteo,error:errRpc}=await SB.rpc("registrar_ingreso"); if(errRpc) console.error("registrar_ingreso:",errRpc); else if(conteo!=null) SESION.veces_ingreso=conteo; }catch(e){ console.error("registrar_ingreso:",e); }
   await iniciarAppLogueada();
 }
 async function hacerLogout(){
@@ -261,7 +274,8 @@ async function iniciarAppLogueada(){
   document.getElementById("app").style.display="flex";
   const badge=document.getElementById("userBadge");
   const etiquetaRol={coordinador:"Coordinador",supervisor:"Supervisor",ejecutivo:"Ejecutivo"}[SESION.rol]||SESION.rol;
-  badge.innerHTML=`<b>${SESION.nombre||SESION.usuario}</b> · ${etiquetaRol} · Ingreso N° ${SESION.veces_ingreso||1}`;
+  const fmtConexion=f=>{ if(!f) return "primer ingreso"; const d=new Date(f); return d.toLocaleDateString("es-CL")+" "+d.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"}); };
+  badge.innerHTML=`<b>${SESION.nombre||SESION.usuario}</b> · ${etiquetaRol} · Ingreso N° ${SESION.veces_ingreso||1} · Última conexión: ${fmtConexion(SESION.ultima_conexion)}`;
   const importWrap=document.getElementById("importWrap");
   importWrap.style.display = SESION.rol==="ejecutivo" ? "none" : "";
   updateSyncDisplay();
@@ -269,7 +283,7 @@ async function iniciarAppLogueada(){
   show(SESION.rol==="ejecutivo" ? "dashEjec" : "dashboard");
   const ok=await loadFromCloud(false);
   if(!ok) setCloudStatus("Sin conexión, usando datos locales",false);
-  if(SESION.rol!=="ejecutivo") cargarHistorial();
+  if(SESION.rol!=="ejecutivo"){ cargarHistorial(); cargarIngresosEquipo(); }
 }
 document.getElementById("loginPass")?.addEventListener("keydown",e=>{ if(e.key==="Enter") hacerLogin(); });
 document.getElementById("loginEmail")?.addEventListener("keydown",e=>{ if(e.key==="Enter") hacerLogin(); });
@@ -414,6 +428,44 @@ async function cargarHistorial(){
     HISTORIAL=data||[];
     if(CUR==="dashboard") render("dashboard");
   }catch(e){ console.error("cargarHistorial:",e); }
+}
+let INGRESOS_EQUIPO=[];
+/* Trae cuántas veces ha entrado cada ejecutivo y su última conexión — Supabase filtra solo a quien corresponde
+   (Coordinador ve a todos, Supervisor solo a su equipo, gracias a la regla de la base de datos) */
+async function cargarIngresosEquipo(){
+  if(!SB || !SESION || SESION.rol==="ejecutivo") return;
+  try{
+    const {data,error}=await SB.from("progesys_usuarios").select("nombre,rol,rut,veces_ingreso,ultima_conexion").eq("rol","ejecutivo");
+    if(error) throw error;
+    INGRESOS_EQUIPO=(data||[]).sort((a,b)=>(b.veces_ingreso||0)-(a.veces_ingreso||0));
+    if(CUR==="dashboard") render("dashboard");
+  }catch(e){ console.error("cargarIngresosEquipo:",e); }
+}
+/* Descarga el detalle de CADA ingreso (fecha, hora, usuario, nombre, rol) en un Excel.
+   Supabase filtra automáticamente: Coordinador ve todo, Supervisor solo a su equipo. */
+async function exportarHistorialIngresos(){
+  if(!SB || !SESION || SESION.rol==="ejecutivo"){ toast("Esta exportación es solo para Coordinador o Supervisor."); return; }
+  try{
+    const {data,error}=await SB.from("historial_ingresos").select("*").order("fecha_hora",{ascending:false});
+    if(error) throw error;
+    if(!data||!data.length){ toast("Aún no hay ingresos registrados para exportar."); return; }
+    const filas=data.map(r=>{
+      const f=r.fecha_hora? new Date(r.fecha_hora) : null;
+      return {
+        "Usuario": emailAUsuario(r.usuario),
+        "Nombre": r.nombre||"",
+        "Rol": r.rol||"",
+        "Fecha": f? f.toLocaleDateString("es-CL") : "",
+        "Hora": f? f.toLocaleTimeString("es-CL") : ""
+      };
+    });
+    const ws=XLSX.utils.json_to_sheet(filas);
+    ws["!cols"]=[{wch:22},{wch:26},{wch:14},{wch:13},{wch:12}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"Ingresos");
+    XLSX.writeFile(wb,"PROGESYS_historial_ingresos.xlsx");
+    toast("Historial de ingresos descargado");
+  }catch(e){ console.error("exportarHistorialIngresos:",e); toast("No se pudo exportar: "+e.message); }
 }
 function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.style.display="block"; clearTimeout(t._x); t._x=setTimeout(()=>t.style.display="none",3800); }
 function clearAll(){ if(confirm("¿Borrar todos los datos cargados en PROGESYS?")){ localStorage.removeItem("progesys_data"); location.reload(); } }
@@ -943,14 +995,16 @@ function renderDash(el){
     <div style="font-size:12.5px;opacity:.75;margin-top:5px">Ejecutivos activos: ${activos} · Registros de asistencia: ${S.asistencia.length} · Auditorías de calidad: ${S.calidad.length}</div>
   </div>
   ${esCoordinador? `
-  <div class="panel">
-    <h2>Configurar indicadores</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">
-      ${INDICADORES.map(i=>`<label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft);cursor:pointer">
-        <input type="checkbox" ${IND[i.k]!==false?"checked":""} onchange="toggleIndicador('${i.k}',this.checked)"> ${i.n}
-      </label>`).join("")}
+  <details class="panel ind-panel" ${INDICADORES_PANEL_ABIERTO?"open":""} ontoggle="INDICADORES_PANEL_ABIERTO=this.open">
+    <summary>Configurar indicadores <span class="ind-count">${INDICADORES.filter(i=>IND[i.k]!==false).length}/${INDICADORES.length} activos</span><span class="ind-arrow">▸</span></summary>
+    <div class="ind-body">
+      <div class="ind-grid">
+        ${INDICADORES.map(i=>`<label class="ind-chip ${IND[i.k]!==false?"on":""}">
+          <input type="checkbox" ${IND[i.k]!==false?"checked":""} onchange="toggleIndicador('${i.k}',this.checked);this.closest('label').classList.toggle('on',this.checked)"><span>${i.n}</span>
+        </label>`).join("")}
+      </div>
     </div>
-  </div>` : ""}
+  </details>` : ""}
   <div class="cards">
     ${card("adherencia","Adherencia",G.adherencia)} ${card("contactabilidad","Contactabilidad",G.contactabilidad)}
     ${card("e1snl","EPA 1 SNL",G.e1snl)} ${card("e1ep","EPA 1 EP",G.e1ep)}
@@ -984,7 +1038,17 @@ function renderDash(el){
   </div>
   <div class="panel"><h2>Historial EPA · últimos 6 meses por ejecutivo (SNL y EP)</h2>
     ${tablaEpaHistPorEjecutivo()}
-  </div>`;
+  </div>
+  ${(SESION && SESION.rol!=="ejecutivo")? `
+  <details class="panel ind-panel" ${INGRESOS_PANEL_ABIERTO?"open":""} ontoggle="INGRESOS_PANEL_ABIERTO=this.open">
+    <summary>Ingresos al programa por ejecutivo <span class="ind-count">${INGRESOS_EQUIPO.length} ejecutivos</span><span class="ind-arrow">▸</span></summary>
+    <div class="ind-body">
+      <div style="margin-bottom:12px"><button class="btn btn-teal btn-sm" onclick="exportarHistorialIngresos()">⬇ Exportar historial detallado (Excel: usuario, fecha y hora)</button></div>
+      ${INGRESOS_EQUIPO.length? `<div class="tblwrap"><table><thead><tr><th>Ejecutivo</th><th>Veces que ha ingresado</th><th>Última conexión</th></tr></thead><tbody>
+        ${INGRESOS_EQUIPO.map(u=>`<tr><td>${u.nombre||"—"}</td><td class="num">${u.veces_ingreso??0}</td><td>${u.ultima_conexion? new Date(u.ultima_conexion).toLocaleString("es-CL"):"Nunca"}</td></tr>`).join("")}
+      </tbody></table></div>` : `<div class="empty">Aún no hay datos de ingreso de ejecutivos (o todavía nadie de tu equipo ha entrado a PROGESYS).</div>`}
+    </div>
+  </details>` : ""}`;
 }
 /* Gráfico de línea (SVG, sin librerías externas) del promedio global de EPA SNL (e1snl+e2snl)
    y EPA EP (e1ep+e2ep) por mes, usando los últimos 6 meses disponibles en EPA_Historico. */
@@ -1026,6 +1090,8 @@ function bars(execs,key,meta){
 }
 
 /* ════════════════════════ Dashboard Ejecutivo ════════════════════════ */
+let INDICADORES_PANEL_ABIERTO=false;
+let INGRESOS_PANEL_ABIERTO=false;
 let SEL_EXEC="";
 let PERFIL="coordinador", SEL_SUPERVISOR="";
 function renderDashEjec(el){
