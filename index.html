@@ -1134,8 +1134,9 @@ function bars(execs,key,meta){
 /* ════════════════════════ Dashboard Ejecutivo ════════════════════════ */
 let INDICADORES_PANEL_ABIERTO=false;
 let INGRESOS_PANEL_ABIERTO=false;
-let SEL_EXEC="";
-let PERFIL="coordinador", SEL_SUPERVISOR="";
+let SEL_EXEC = localStorage.getItem("progesys_SEL_EXEC") || "";
+let PERFIL = localStorage.getItem("progesys_PERFIL") || "coordinador";
+let SEL_SUPERVISOR = localStorage.getItem("progesys_SEL_SUPERVISOR") || "";
 function renderDashEjec(el){
   const pct0 = v => v==null?"—":Math.round(v*100)+"%";
   const esEjecutivo = SESION && SESION.rol==="ejecutivo";
@@ -1149,8 +1150,15 @@ function renderDashEjec(el){
     execs=execs.filter(x=>{ const f=S.ejecutivos.find(ee=>ee.nombre===x.nombre); return f && f.supervisor===SEL_SUPERVISOR; });
   }
   if(previsualizando && VER_COMO.tipo==="ejecutivo"){ SEL_EXEC=VER_COMO.nombre; }
-  else if(esEjecutivo){ SEL_EXEC = execs.length? execs[0].nombre : ""; }
-  else if(!SEL_EXEC || !execs.find(x=>x.nombre===SEL_EXEC)) SEL_EXEC = execs.length? execs[0].nombre : "";
+  else if(esEjecutivo){ 
+    SEL_EXEC = SESION.nombre;  // ✅ Mostrar datos del ejecutivo logueado
+    localStorage.setItem("progesys_SEL_EXEC", SEL_EXEC);
+  }
+  else if(!SEL_EXEC) { 
+    SEL_EXEC = execs.length? execs[0].nombre : ""; 
+    localStorage.setItem("progesys_SEL_EXEC", SEL_EXEC);
+  }
+  // IMPORTANTE: NO resetear SEL_EXEC si el usuario lo seleccionó manualmente
   const e=execs.find(x=>x.nombre===SEL_EXEC)||{};
   const ficha=S.ejecutivos.find(x=>x.nombre===SEL_EXEC)||{};
   const asis=S.asistencia.filter(r=>mismoExec(r,e));
@@ -1169,11 +1177,11 @@ function renderDashEjec(el){
   <div class="panel">
     <h2>${esCoordinador? "Perfil · Ver como" : "Perfil"}</h2>
     <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
-      ${esCoordinador? `<select style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit" onchange="PERFIL=this.value;SEL_EXEC='';render('dashEjec')">
+      ${esCoordinador? `<select style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit" onchange="PERFIL=this.value;localStorage.setItem('progesys_PERFIL',PERFIL);SEL_EXEC='';localStorage.removeItem('progesys_SEL_EXEC');render('dashEjec')">
         <option value="coordinador" ${PERFIL==="coordinador"?"selected":""}>Coordinador (ver todos)</option>
         <option value="supervisor" ${PERFIL==="supervisor"?"selected":""}>Supervisor (ver un equipo)</option>
       </select>` : ""}
-      ${(esCoordinador && PERFIL==="supervisor")? `<select style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit" onchange="SEL_SUPERVISOR=this.value;SEL_EXEC='';render('dashEjec')">
+      ${(esCoordinador && PERFIL==="supervisor")? `<select style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit" onchange="SEL_SUPERVISOR=this.value;localStorage.setItem('progesys_SEL_SUPERVISOR',SEL_SUPERVISOR);SEL_EXEC='';localStorage.removeItem('progesys_SEL_EXEC');render('dashEjec')">
         ${supervisores.map(s=>`<option ${s===SEL_SUPERVISOR?"selected":""}>${s}</option>`).join("")||"<option>Sin supervisores</option>"}
       </select>` : ""}
       ${(esCoordinador && PERFIL==="supervisor" && SEL_SUPERVISOR)? `<button class="btn btn-ghost btn-sm" onclick="VER_COMO={tipo:'supervisor',nombre:SEL_SUPERVISOR};render('dashEjec')">👁 Vista previa como este Supervisor</button>` : ""}
@@ -1182,7 +1190,7 @@ function renderDashEjec(el){
   <div class="panel">
     <h2>Seleccionar ejecutivo</h2>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-      <select style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;min-width:280px;font-family:inherit" onchange="SEL_EXEC=this.value;render('dashEjec')">
+      <select style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;min-width:280px;font-family:inherit" onchange="SEL_EXEC=this.value;localStorage.setItem('progesys_SEL_EXEC',SEL_EXEC);render('dashEjec')">
         ${execs.map(x=>`<option ${x.nombre===SEL_EXEC?"selected":""}>${x.nombre}</option>`).join("")||"<option>Sin ejecutivos</option>"}
       </select>
       ${esCoordinador && SEL_EXEC? `<button class="btn btn-ghost btn-sm" onclick="VER_COMO={tipo:'ejecutivo',nombre:'${SEL_EXEC.replace(/'/g,"\\'")}'};render('dashEjec')">👁 Vista previa como este Ejecutivo</button>` : ""}
