@@ -11,7 +11,7 @@
   --navy:#0B2545; --navy-2:#13315C; --navy-3:#1D4E89;
   --teal:#0FA3A3; --teal-2:#14B8A6; --teal-soft:#E0F5F3;
   --white:#FFFFFF; --bg:#F4F6F9; --line:#E3E8EF;
-  --ink:#0B2545; --ink-soft:#5B6B82; --ink-faint:#93A1B5;
+  --ink:#0B2545; --ink-soft:#5B6B82; --ink-faint:#93A1B5; --ink-strong:#0B2545;
   --ok:#1F9D55; --ok-bg:#E7F6EC; --warn:#C9880A; --warn-bg:#FCF3DC; --bad:#C0392B; --bad-bg:#FBE9E7;
   --radius:12px; --shadow:0 1px 3px rgba(11,37,69,.08),0 4px 14px rgba(11,37,69,.06);
 }
@@ -19,7 +19,7 @@
   --navy-2:#1B3E6B; --navy-3:#2A5A9C;
   --teal-soft:#0F2E30;
   --white:#141E2C; --bg:#0A1220; --line:#243044;
-  --ink:#E7ECF3; --ink-soft:#A8B4C6; --ink-faint:#71809A;
+  --ink:#E7ECF3; --ink-soft:#A8B4C6; --ink-faint:#71809A; --ink-strong:#EAF1FF;
   --ok-bg:#0F2A1B; --warn-bg:#332A0F; --bad-bg:#33150F;
   --shadow:0 1px 3px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.3);
 }
@@ -50,7 +50,7 @@ nav button .ic{width:17px;text-align:center;opacity:.85}
 /* ── Main ────────────────────────────── */
 main{flex:1;min-width:0;display:flex;flex-direction:column}
 header.top{background:var(--white);border-bottom:1px solid var(--line);padding:12px 26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
-header.top h1{font-size:17px;font-weight:700;color:var(--navy)}
+header.top h1{font-size:17px;font-weight:700;color:var(--ink-strong)}
 header.top .spacer{flex:1}
 .btn{display:inline-flex;align-items:center;gap:7px;border:none;border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:filter .15s}
 .btn:hover{filter:brightness(1.08)}
@@ -64,12 +64,12 @@ section.page.on{display:block}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:22px}
 .card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:15px 17px;border-top:3px solid var(--teal)}
 .card .k{font-size:11.5px;color:var(--ink-soft);font-weight:600;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center}
-.card .v{font-size:27px;font-weight:800;color:var(--navy);margin:5px 0 2px}
+.card .v{font-size:27px;font-weight:800;color:var(--ink-strong);margin:5px 0 2px}
 .card .m{font-size:11px;color:var(--ink-faint)}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
 .dot.V{background:var(--ok)} .dot.A{background:var(--warn)} .dot.R{background:var(--bad)} .dot.N{background:var(--ink-faint)}
 .panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:20px}
-.panel h2{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.panel h2{font-size:14px;font-weight:700;color:var(--ink-strong);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .panel h2::before{content:"";width:4px;height:16px;background:var(--teal);border-radius:2px}
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .toolbar input[type=search]{flex:1;min-width:180px;max-width:340px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:var(--bg)}
@@ -92,18 +92,19 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .bar-row .lbl{width:130px;flex-shrink:0;color:var(--ink-soft);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-track{flex:1;height:14px;background:var(--bg);border-radius:99px;overflow:hidden}
 .bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-2));border-radius:99px}
-.bar-val{width:52px;text-align:right;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.bar-val{width:52px;text-align:right;font-weight:700;color:var(--ink-strong);font-variant-numeric:tabular-nums}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:980px){.grid-2{grid-template-columns:1fr}aside{width:64px}.brand-name,.brand-sub,nav .grp,nav button .tx,.side-foot{display:none}nav button{justify-content:center;padding:11px 0}}
 .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
 .info-grid .cell{background:var(--bg);border-radius:9px;padding:10px 13px}
 .info-grid .cell .k{font-size:10.5px;color:var(--ink-faint);font-weight:700;letter-spacing:.05em}
-.info-grid .cell .v{font-size:14px;font-weight:700;color:var(--navy);margin-top:2px}
+.info-grid .cell .v{font-size:14px;font-weight:700;color:var(--ink-strong);margin-top:2px}
 .turn-cell{display:inline-block;width:26px;height:22px;line-height:22px;text-align:center;border-radius:5px;font-size:11px;font-weight:700}
 .tA{background:var(--teal-soft);color:var(--teal)} .tB{background:#E3EDF9;color:var(--navy-3)} .tC{background:#EFE9FB;color:#6B4EAE} .tD{background:var(--warn-bg);color:var(--warn)} .tV{background:var(--bg);color:var(--ink-faint)} .tX{background:var(--bad-bg);color:var(--bad)}
 #toast{position:fixed;bottom:22px;right:22px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;display:none;z-index:99;max-width:420px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:10px}
 .ind-panel{padding:0}
-.ind-panel>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;gap:10px;font-weight:700;color:var(--navy);font-size:14px;user-select:none}
+.ind-panel>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;gap:10px;font-weight:700;color:var(--ink-strong);font-size:14px;user-select:none}
 .ind-panel>summary::-webkit-details-marker{display:none}
 .ind-panel>summary::before{content:"";width:4px;height:16px;background:var(--teal);border-radius:2px;flex-shrink:0}
 .ind-count{font-weight:500;color:var(--ink-faint);font-size:12px}
@@ -113,14 +114,13 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .ind-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px}
 .ind-chip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;transition:background .15s,border-color .15s,color .15s}
 .ind-chip:hover{border-color:var(--teal)}
-.ind-chip.on{background:var(--teal-soft);border-color:var(--teal);color:var(--navy);font-weight:600}
+.ind-chip.on{background:var(--teal-soft);border-color:var(--teal);color:var(--ink-strong);font-weight:600}
 .ind-chip input{accent-color:var(--teal);width:14px;height:14px;flex-shrink:0}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:10px}
 .legend span{display:flex;align-items:center;gap:6px}
 ol.instr{padding-left:22px;line-height:2;font-size:13.5px;color:var(--ink)}
 ol.instr b{color:var(--teal)}
 .filebtn input{display:none}
-#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 55%,var(--teal) 220%)}
+#loginScreen,#cambiarClaveScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 55%,var(--teal) 220%)}
 .login-card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);padding:36px 34px;width:340px;max-width:92vw}
 .login-card .brand{padding:0 0 20px;border:none;justify-content:center}
 .login-card h2{font-size:16px;color:var(--navy);text-align:center;margin-bottom:20px;font-weight:700}
@@ -129,7 +129,7 @@ ol.instr b{color:var(--teal)}
 .login-card .btn{width:100%;justify-content:center;margin-top:20px;padding:11px}
 .login-err{color:var(--bad);font-size:12.5px;margin-top:12px;text-align:center;min-height:16px}
 .user-badge{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
-.user-badge b{color:var(--navy)}
+.user-badge b{color:var(--ink-strong)}
 </style>
 </head>
 <body>
@@ -148,6 +148,22 @@ ol.instr b{color:var(--teal)}
     <div class="login-err" id="loginErr"></div>
   </div>
 </div>
+<div id="cambiarClaveScreen" style="display:none">
+  <div class="login-card">
+    <div class="brand">
+      <svg class="iso" viewBox="0 0 40 40"><path d="M6 4h13a11 11 0 0 1 0 22H14v10H6V4zm8 7v8h5a4 4 0 0 0 0-8h-5z" fill="#14B8A6"/><path d="M27 26l7 7-7 7v-4.5h-5v-5h5V26z" fill="#0FA3A3" opacity=".85"/></svg>
+      <div><div class="brand-name">PROGESYS</div><div class="brand-sub">CALL CENTER SUITE</div></div>
+    </div>
+    <h2>Crea tu nueva contraseña</h2>
+    <div style="font-size:12.5px;color:var(--ink-soft);text-align:center;margin-bottom:6px">Por seguridad, debes reemplazar la clave temporal antes de continuar.</div>
+    <label>Contraseña nueva</label>
+    <input type="password" id="nuevaClave1" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+    <label>Repite la contraseña</label>
+    <input type="password" id="nuevaClave2" autocomplete="new-password" placeholder="••••••••">
+    <button class="btn btn-teal" id="cambiarClaveBtn" onclick="hacerCambioClaveObligatorio()">Guardar y continuar</button>
+    <div class="login-err" id="cambiarClaveErr"></div>
+  </div>
+</div>
 <div id="app" style="display:none">
 <aside>
   <div class="brand">
@@ -164,6 +180,7 @@ ol.instr b{color:var(--teal)}
     <span id="cloudStatus" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--bg);color:var(--ink-faint)">◌ Conectando…</span>
     <div class="spacer"></div>
     <span class="user-badge" id="userBadge"></span>
+    <a class="btn btn-ghost btn-sm" href="https://manuelmc1979.github.io/suite-callcenter/" style="text-decoration:none">🏠 Portal</a>
     <button class="btn btn-ghost btn-sm" id="themeBtn" onclick="toggleTema()">🌙 Modo oscuro</button>
     <label class="btn btn-teal filebtn" id="importWrap"><span id="importLabel">⬆ Importar Excel matriz</span><input type="file" id="fileInput" accept=".xlsx,.xls"></label>
     <button class="btn btn-ghost btn-sm" onclick="hacerLogout()">Cerrar sesión</button>
@@ -255,9 +272,34 @@ async function cargarSesion(userId){
     await SB.auth.signOut();
     return;
   }
-  SESION={id:data.id, usuario:emailAUsuario(auth?.user?.email||data.email), nombre:data.nombre, rol:data.rol, rut:data.rut, supervisor_nombre:data.supervisor_nombre, veces_ingreso:data.veces_ingreso??0, ultima_conexion:data.ultima_conexion||null};
-  try{ const {data:conteo,error:errRpc}=await SB.rpc("registrar_ingreso"); if(errRpc) console.error("registrar_ingreso:",errRpc); else if(conteo!=null) SESION.veces_ingreso=conteo; }catch(e){ console.error("registrar_ingreso:",e); }
+  SESION={id:data.id, usuario:emailAUsuario(auth?.user?.email||data.email), nombre:data.nombre, rol:data.rol, rut:data.rut, supervisor_nombre:data.supervisor_nombre, veces_ingreso:data.veces_ingreso??0, debe_cambiar_clave:!!data.debe_cambiar_clave};
+  try{ const {data:conteo,error:errRpc}=await SB.rpc("progesys_registrar_ingreso"); if(!errRpc && conteo!=null) SESION.veces_ingreso=conteo; }catch(e){ console.error("registrar_ingreso:",e); }
+  if(SESION.debe_cambiar_clave){
+    document.getElementById("loginScreen").style.display="none";
+    document.getElementById("cambiarClaveScreen").style.display="flex";
+    return;
+  }
   await iniciarAppLogueada();
+}
+async function hacerCambioClaveObligatorio(){
+  const p1=document.getElementById("nuevaClave1").value;
+  const p2=document.getElementById("nuevaClave2").value;
+  const err=document.getElementById("cambiarClaveErr"), btn=document.getElementById("cambiarClaveBtn");
+  err.textContent="";
+  if(!p1||p1.length<6){ err.textContent="La contraseña debe tener al menos 6 caracteres."; return; }
+  if(p1!==p2){ err.textContent="Las dos contraseñas no coinciden."; return; }
+  btn.disabled=true; btn.textContent="Guardando…";
+  try{
+    const {error}=await SB.auth.updateUser({password:p1});
+    if(error) throw error;
+    await SB.rpc("progesys_marcar_clave_cambiada");
+    SESION.debe_cambiar_clave=false;
+    document.getElementById("cambiarClaveScreen").style.display="none";
+    document.getElementById("nuevaClave1").value=""; document.getElementById("nuevaClave2").value="";
+    await iniciarAppLogueada();
+    toast("Contraseña actualizada");
+  }catch(e){ err.textContent="No se pudo guardar: "+e.message; }
+  finally{ btn.disabled=false; btn.textContent="Guardar y continuar"; }
 }
 async function hacerLogout(){
   if(SB) await SB.auth.signOut();
@@ -266,6 +308,7 @@ async function hacerLogout(){
       turnosMes:{titulo:"",dias:[],letras:[],filas:[]},config:JSON.parse(JSON.stringify(DEFAULT_CONFIG))};
   document.getElementById("loginEmail").value=""; document.getElementById("loginPass").value="";
   document.getElementById("loginErr").textContent="";
+  document.getElementById("cambiarClaveScreen").style.display="none";
   document.getElementById("app").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
 }
@@ -274,8 +317,7 @@ async function iniciarAppLogueada(){
   document.getElementById("app").style.display="flex";
   const badge=document.getElementById("userBadge");
   const etiquetaRol={coordinador:"Coordinador",supervisor:"Supervisor",ejecutivo:"Ejecutivo"}[SESION.rol]||SESION.rol;
-  const fmtConexion=f=>{ if(!f) return "primer ingreso"; const d=new Date(f); return d.toLocaleDateString("es-CL")+" "+d.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"}); };
-  badge.innerHTML=`<b>${SESION.nombre||SESION.usuario}</b> · ${etiquetaRol} · Ingreso N° ${SESION.veces_ingreso||1} · Última conexión: ${fmtConexion(SESION.ultima_conexion)}`;
+  badge.innerHTML=`<b>${SESION.nombre||SESION.usuario}</b> · ${etiquetaRol} · Ingreso N° ${SESION.veces_ingreso||1}`;
   const importWrap=document.getElementById("importWrap");
   importWrap.style.display = SESION.rol==="ejecutivo" ? "none" : "";
   updateSyncDisplay();
@@ -301,7 +343,7 @@ const FIELD_MAPS={
   incidencias:{fecha:"fecha",rut:"rut",nombre:"nombre",tipo:"tipo",obs:"obs"},
   outbound:{rut:"rut",nombre:"nombre",contactados:"contactados",noContactados:"no_contactados",pctContacto:"pct_contacto",obs:"obs"}
 };
-const TABLE_KEY={ejecutivos:"ejecutivos",asistencia:"asistencia",kpi:"kpi",calidad:"calidad",epa:"epa",epaHist:"epa_historico",feedback:"feedback",compromisos:"compromisos",incidencias:"incidencias",outbound:"outbound"};
+const TABLE_KEY={ejecutivos:"progesys_ejecutivos",asistencia:"progesys_asistencia",kpi:"progesys_kpi",calidad:"progesys_calidad",epa:"progesys_epa",epaHist:"progesys_epa_historico",feedback:"progesys_feedback",compromisos:"progesys_compromisos",incidencias:"progesys_incidencias",outbound:"progesys_outbound"};
 function toDb(map,o){ const out={}; Object.entries(map).forEach(([k,col])=>{ out[col]=(o[k]===undefined?null:o[k]); }); return out; }
 function fromDb(map,row){ const out={}; Object.entries(map).forEach(([k,col])=>{ out[k]=row[col]; }); return out; }
 
@@ -313,16 +355,16 @@ function setCloudStatus(txt,ok){
 }
 
 async function pushConfig(){
-  await SB.from("config").delete().gt("id",0);
+  await SB.from("progesys_config").delete().gt("id",0);
   const rows=[
     ...Object.entries(S.config.metas).map(([k,v])=>({clave:"meta_"+k, valor:String(v)})),
     ...S.config.turnos.map(t=>({clave:"turno_"+t.t, valor:JSON.stringify(t)})),
     ...Object.entries(S.config.indicadores||{}).map(([k,v])=>({clave:"ind_"+k, valor:v?"1":"0"}))
   ];
-  if(rows.length){ const {error}=await SB.from("config").insert(rows); if(error) throw error; }
+  if(rows.length){ const {error}=await SB.from("progesys_config").insert(rows); if(error) throw error; }
 }
 async function pullConfig(){
-  const {data,error}=await SB.from("config").select("*"); if(error) throw error;
+  const {data,error}=await SB.from("progesys_config").select("*"); if(error) throw error;
   if(!S.config.indicadores) S.config.indicadores=JSON.parse(JSON.stringify(DEFAULT_CONFIG.indicadores));
   (data||[]).forEach(r=>{
     if(r.clave.startsWith("meta_")){ const k=r.clave.slice(5); const v=parseFloat(r.valor); if(!isNaN(v)) S.config.metas[k]=v; }
@@ -331,14 +373,14 @@ async function pullConfig(){
   });
 }
 async function pushTurnos(){
-  await SB.from("turnos_mes").delete().gt("id",0);
+  await SB.from("progesys_turnos_mes").delete().gt("id",0);
   const t=S.turnosMes; if(!t.filas.length) return;
   const rows=[];
   t.filas.forEach(f=>{ f.turnos.forEach((tv,i)=>{ rows.push({titulo:t.titulo, dia:t.dias[i], nombre:f.nombre, turno:tv}); }); });
-  if(rows.length){ const {error}=await SB.from("turnos_mes").insert(rows); if(error) throw error; }
+  if(rows.length){ const {error}=await SB.from("progesys_turnos_mes").insert(rows); if(error) throw error; }
 }
 async function pullTurnos(){
-  const {data,error}=await SB.from("turnos_mes").select("*"); if(error) throw error;
+  const {data,error}=await SB.from("progesys_turnos_mes").select("*"); if(error) throw error;
   if(!data||!data.length) return;
   const titulo=data[0].titulo||"";
   const dias=[...new Set(data.map(r=>r.dia))].sort((a,b)=>a-b);
@@ -353,18 +395,8 @@ async function syncTable(key){
   if(!SB) return;
   try{
     const table=TABLE_KEY[key], map=FIELD_MAPS[key], arr=S[key]||[];
-    if(arr.length){
-      /* Inserta primero y borra los registros viejos recién después de que la inserción
-         resulte exitosa — así, si la inserción falla (p.ej. columnas que no existen en la
-         tabla), no se pierde lo que ya había en la nube. */
-      const {data:antes}=await SB.from(table).select("id").order("id",{ascending:false}).limit(1);
-      const maxIdAntes=antes&&antes.length? antes[0].id : 0;
-      const {error}=await SB.from(table).insert(arr.map(o=>toDb(map,o)));
-      if(error) throw error;
-      await SB.from(table).delete().gt("id",0).lte("id",maxIdAntes);
-    }else{
-      await SB.from(table).delete().gt("id",0);
-    }
+    await SB.from(table).delete().gt("id",0);
+    if(arr.length){ const {error}=await SB.from(table).insert(arr.map(o=>toDb(map,o))); if(error) throw error; }
   }catch(e){ console.error(e); toast("No se pudo sincronizar con la nube: "+e.message); }
 }
 /* Sube TODOS los módulos a la nube */
@@ -399,7 +431,7 @@ async function loadFromCloud(showToast){
       S[key]=(data||[]).map(r=>fromDb(map,r));
     }
     await pullConfig(); await pullTurnos();
-    recalcAsistencia(); save(); 
+    recalcAsistencia(); save();
     const now=new Date();
     const dateStr=now.toLocaleDateString("es-CL");
     const timeStr=now.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
@@ -416,7 +448,7 @@ async function loadFromCloud(showToast){
 async function registrarHistorial(nombreArchivo, log){
   if(!SB) return;
   try{
-    await SB.from("historial_importaciones").insert([{
+    await SB.from("progesys_historial_importaciones").insert([{
       archivo: nombreArchivo||"(sin nombre)",
       resumen: log.join(" · "),
       ejecutivos_n: S.ejecutivos.length,
@@ -433,19 +465,19 @@ let HISTORIAL=[];
 async function cargarHistorial(){
   if(!SB) return;
   try{
-    const {data,error}=await SB.from("historial_importaciones").select("*").order("fecha_hora",{ascending:false}).limit(10);
+    const {data,error}=await SB.from("progesys_historial_importaciones").select("*").order("fecha_hora",{ascending:false}).limit(10);
     if(error) throw error;
     HISTORIAL=data||[];
     if(CUR==="dashboard") render("dashboard");
   }catch(e){ console.error("cargarHistorial:",e); }
 }
 let INGRESOS_EQUIPO=[];
-/* Trae cuántas veces ha entrado cada ejecutivo y su última conexión — Supabase filtra solo a quien corresponde
+/* Trae cuántas veces ha entrado cada ejecutivo — Supabase filtra solo a quien corresponde
    (Coordinador ve a todos, Supervisor solo a su equipo, gracias a la regla de la base de datos) */
 async function cargarIngresosEquipo(){
   if(!SB || !SESION || SESION.rol==="ejecutivo") return;
   try{
-    const {data,error}=await SB.from("progesys_usuarios").select("nombre,rol,rut,veces_ingreso,ultima_conexion").eq("rol","ejecutivo");
+    const {data,error}=await SB.from("progesys_usuarios").select("nombre,rol,rut,veces_ingreso,ultimo_ingreso").eq("rol","ejecutivo");
     if(error) throw error;
     INGRESOS_EQUIPO=(data||[]).sort((a,b)=>(b.veces_ingreso||0)-(a.veces_ingreso||0));
     if(CUR==="dashboard") render("dashboard");
@@ -456,7 +488,7 @@ async function cargarIngresosEquipo(){
 async function exportarHistorialIngresos(){
   if(!SB || !SESION || SESION.rol==="ejecutivo"){ toast("Esta exportación es solo para Coordinador o Supervisor."); return; }
   try{
-    const {data,error}=await SB.from("historial_ingresos").select("*").order("fecha_hora",{ascending:false});
+    const {data,error}=await SB.from("progesys_historial_ingresos").select("*").order("fecha_hora",{ascending:false});
     if(error) throw error;
     if(!data||!data.length){ toast("Aún no hay ingresos registrados para exportar."); return; }
     const filas=data.map(r=>{
@@ -538,7 +570,7 @@ const MODULES = [
  {id:"incidencias",ic:"⚑", name:"Incidencias", grp:"GESTIÓN", key:"incidencias", hidden:true,
   cols:[{k:"fecha",n:"Fecha",t:"date"},{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"tipo",n:"Tipo",t:"sel",opts:["Atraso","Inasistencia","Licencia","Permiso","Técnica","Otra"]},{k:"obs",n:"Observaciones"}]},
  {id:"config",ic:"⚙", name:"Configuración", grp:"SISTEMA", hidden:true},
- {id:"instrucciones",ic:"?", name:"Instrucciones", grp:"SISTEMA", hidden:true}
+ {id:"instrucciones", ic:"?", name:"Instrucciones", grp:"SISTEMA", hidden:true}
 ];
 const MOD = Object.fromEntries(MODULES.map(m=>[m.id,m]));
 
@@ -1042,7 +1074,7 @@ function renderDash(el){
         ${rank.map((x,i)=>`<tr><td style="font-size:18px">${medallas[i]}</td><td>${x.nombre}</td>
           <td class="num"><span class="pill ${light(x.e1snl,M.epa1)}">${pct(x.e1snl)}</span></td>
           <td class="num"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
-          <td class="num" style="font-weight:800;color:var(--navy)">${pct(x.score)}</td></tr>`).join("")}
+          <td class="num" style="font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
       </tbody></table></div>`;
     })()}
   </div>
@@ -1054,8 +1086,8 @@ function renderDash(el){
     <summary>Ingresos al programa por ejecutivo <span class="ind-count">${INGRESOS_EQUIPO.length} ejecutivos</span><span class="ind-arrow">▸</span></summary>
     <div class="ind-body">
       <div style="margin-bottom:12px"><button class="btn btn-teal btn-sm" onclick="exportarHistorialIngresos()">⬇ Exportar historial detallado (Excel: usuario, fecha y hora)</button></div>
-      ${INGRESOS_EQUIPO.length? `<div class="tblwrap"><table><thead><tr><th>Ejecutivo</th><th>Veces que ha ingresado</th><th>Última conexión</th></tr></thead><tbody>
-        ${INGRESOS_EQUIPO.map(u=>`<tr><td>${u.nombre||"—"}</td><td class="num">${u.veces_ingreso??0}</td><td>${u.ultima_conexion? new Date(u.ultima_conexion).toLocaleString("es-CL"):"Nunca"}</td></tr>`).join("")}
+      ${INGRESOS_EQUIPO.length? `<div class="tblwrap"><table><thead><tr><th>Ejecutivo</th><th>Veces que ha ingresado</th><th>Último ingreso</th></tr></thead><tbody>
+        ${INGRESOS_EQUIPO.map(u=>`<tr><td>${u.nombre||"—"}</td><td class="num">${u.veces_ingreso??0}</td><td>${u.ultimo_ingreso? new Date(u.ultimo_ingreso).toLocaleString("es-CL"):"Nunca"}</td></tr>`).join("")}
       </tbody></table></div>` : `<div class="empty">Aún no hay datos de ingreso de ejecutivos (o todavía nadie de tu equipo ha entrado a PROGESYS).</div>`}
     </div>
   </details>` : ""}`;
@@ -1159,10 +1191,10 @@ function renderDashEjec(el){
   <div class="panel"><h2>Información del ejecutivo</h2>
     ${puedeEditar && !previsualizando ? `
     <div class="info-grid" id="fichaEditable">
-      <div class="cell"><div class="k">NOMBRE</div><input id="ed_nombre" value="${ficha.nombre||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--navy)"></div>
-      <div class="cell"><div class="k">RUT</div><input id="ed_rut" value="${ficha.rut||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--navy)"></div>
-      <div class="cell"><div class="k">TELÉFONO</div><input id="ed_telefono" value="${ficha.telefono||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--navy)"></div>
-      <div class="cell"><div class="k">CORREO</div><input id="ed_correo" value="${ficha.correo||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--navy)"></div>
+      <div class="cell"><div class="k">NOMBRE</div><input id="ed_nombre" value="${ficha.nombre||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--ink-strong)"></div>
+      <div class="cell"><div class="k">RUT</div><input id="ed_rut" value="${ficha.rut||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--ink-strong)"></div>
+      <div class="cell"><div class="k">TELÉFONO</div><input id="ed_telefono" value="${ficha.telefono||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--ink-strong)"></div>
+      <div class="cell"><div class="k">CORREO</div><input id="ed_correo" value="${ficha.correo||""}" style="width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--ink-strong)"></div>
       <div class="cell"><div class="k">SUPERVISOR</div><div class="v">${ficha.supervisor||"—"}</div></div>
       <div class="cell"><div class="k">EQUIPO</div><div class="v">${ficha.equipo||"—"}</div></div>
       <div class="cell"><div class="k">CARGO</div><div class="v">${ficha.cargo||"—"}</div></div>
