@@ -1153,6 +1153,7 @@ function bars(execs,key,meta){
 /* ════════════════════════ Dashboard Ejecutivo ════════════════════════ */
 let INDICADORES_PANEL_ABIERTO=false;
 let INGRESOS_PANEL_ABIERTO=false;
+let EPA_DIARIO_PANEL_ABIERTO=false;
 let SEL_EXEC = localStorage.getItem("progesys_SEL_EXEC") || "";
 let PERFIL = localStorage.getItem("progesys_PERFIL") || "coordinador";
 let SEL_SUPERVISOR = localStorage.getItem("progesys_SEL_SUPERVISOR") || "";
@@ -1270,15 +1271,18 @@ function renderDashEjec(el){
       </tbody></table></div>` : `<div class="empty">Sin historial EPA para este ejecutivo.</div>`}
     </div>
   </div>
-  <div class="panel"><h2>EPA diario <span style="font-weight:400;color:var(--ink-faint);font-size:12px">· ${epaDia.length} días</span></h2>
-    ${epaDia.length? `<div class="tblwrap" style="max-height:360px;overflow:auto"><table><thead><tr><th>Fecha</th><th>EPA 1 SNL</th><th>EPA 2 SNL</th><th>EPA 1 EP</th><th>EPA 2 EP</th></tr></thead><tbody>
-      ${epaDia.map(d=>`<tr><td>${d.fecha||"—"}</td>
-        <td class="num"><span class="pill ${light(d.e1snl,M.epa1,1)}">${pct0(d.e1snl)}</span></td>
-        <td class="num"><span class="pill ${light(d.e2snl,M.epa2,1)}">${pct0(d.e2snl)}</span></td>
-        <td class="num"><span class="pill ${light(d.e1ep,M.epa1,1)}">${pct0(d.e1ep)}</span></td>
-        <td class="num"><span class="pill ${light(d.e2ep,M.epa2,1)}">${pct0(d.e2ep)}</span></td></tr>`).join("")}
-    </tbody></table></div>` : `<div class="empty">Sin registros de EPA diario para este ejecutivo. Sube la hoja "EPA_Diario" (Fecha, Rut, Nombre, EPA 1 SNL, EPA 2 SNL, EPA 1 EP, EPA 2 EP, Supervisor, Observaciones) con el botón Importar Excel.</div>`}
-  </div>`;
+  <details class="panel ind-panel" ${EPA_DIARIO_PANEL_ABIERTO?"open":""} ontoggle="EPA_DIARIO_PANEL_ABIERTO=this.open">
+    <summary>EPA diario <span class="ind-count">${epaDia.length} días</span><span class="ind-arrow">▸</span></summary>
+    <div class="ind-body">
+      ${epaDia.length? `<div class="tblwrap" style="max-height:360px;overflow:auto"><table><thead><tr><th>Fecha</th><th>EPA 1 SNL</th><th>EPA 2 SNL</th><th>EPA 1 EP</th><th>EPA 2 EP</th></tr></thead><tbody>
+        ${epaDia.map(d=>`<tr><td>${d.fecha||"—"}</td>
+          <td class="num"><span class="pill ${light(d.e1snl,M.epa1,1)}">${pct0(d.e1snl)}</span></td>
+          <td class="num"><span class="pill ${light(d.e2snl,M.epa2,1)}">${pct0(d.e2snl)}</span></td>
+          <td class="num"><span class="pill ${light(d.e1ep,M.epa1,1)}">${pct0(d.e1ep)}</span></td>
+          <td class="num"><span class="pill ${light(d.e2ep,M.epa2,1)}">${pct0(d.e2ep)}</span></td></tr>`).join("")}
+      </tbody></table></div>` : `<div class="empty">Sin registros de EPA diario para este ejecutivo. Sube la hoja "EPA_Diario" (Fecha, Rut, Nombre, EPA 1 SNL, EPA 2 SNL, EPA 1 EP, EPA 2 EP, Supervisor, Observaciones) con el botón Importar Excel.</div>`}
+    </div>
+  </details>`;
 }
 
 /* ════════════════════════ Turnos ════════════════════════ */
