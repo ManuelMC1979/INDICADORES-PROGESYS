@@ -236,7 +236,7 @@ async function hacerLogin(){
 async function cargarSesion(userId){
   const err=document.getElementById("loginErr");
   const {data:auth}=await SB.auth.getUser();
-  const {data,error}=await SB.from("usuarios").select("*").eq("id",userId).maybeSingle();
+  const {data,error}=await SB.from("progesys_usuarios").select("*").eq("id",userId).maybeSingle();
   if(error||!data){
     err.textContent="Tu usuario no tiene un perfil asignado en PROGESYS. Pide al coordinador que te agregue.";
     await SB.auth.signOut();
