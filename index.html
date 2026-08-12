@@ -1089,11 +1089,11 @@ function renderDash(el){
         .sort((a,b)=>b.score-a.score).slice(0,3);
       if(!rank.length) return `<div class="empty">Aún no hay datos de EPA del mes en curso para armar el ranking.</div>`;
       const medallas=["🥇","🥈","🥉"];
-      return `<div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th>EPA 1 SNL</th><th>EPA 2 EP</th><th>Promedio</th></tr></thead><tbody>
+      return `<div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th style="text-align:center">EPA 1 SNL</th><th style="text-align:center">EPA 2 EP</th><th style="text-align:center">Promedio</th></tr></thead><tbody>
         ${rank.map((x,i)=>`<tr><td style="font-size:18px">${medallas[i]}</td><td>${x.nombre}</td>
-          <td class="num"><span class="pill ${light(x.e1snl,M.epa1)}">${pct(x.e1snl)}</span></td>
-          <td class="num"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
-          <td class="num" style="font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
+          <td class="num" style="text-align:center"><span class="pill ${light(x.e1snl,M.epa1)}">${pct(x.e1snl)}</span></td>
+          <td class="num" style="text-align:center"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
+          <td class="num" style="text-align:center;font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
       </tbody></table></div>`;
     })()}
   </div>
