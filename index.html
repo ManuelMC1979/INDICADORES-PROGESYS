@@ -216,7 +216,7 @@ const INDICADORES=[
   {k:"atrasosN",n:"Atrasos (cantidad)"},{k:"atrasosMin",n:"Atrasos (min total)"},
   {k:"tipificaciones",n:"Tipificaciones"},{k:"transferenciaEpa",n:"Transferencia EPA"}
 ];
-let S = {ejecutivos:[],asistencia:[],kpi:[],calidad:[],epa:[],epaHist:[],epaDiario:[],feedback:[],compromisos:[],incidencias:[],outbound:[],
+let S = {ejecutivos:[],asistencia:[],kpi:[],calidad:[],epa:[],epaHist:[],feedback:[],compromisos:[],incidencias:[],outbound:[],
          turnosMes:{titulo:"",dias:[],letras:[],filas:[]},config:JSON.parse(JSON.stringify(DEFAULT_CONFIG))};
 
 function save(){ try{ localStorage.setItem("progesys_data", JSON.stringify(S)); }catch(e){} }
@@ -304,7 +304,7 @@ async function hacerCambioClaveObligatorio(){
 async function hacerLogout(){
   if(SB) await SB.auth.signOut();
   SESION=null; VER_COMO=null;
-  S={ejecutivos:[],asistencia:[],kpi:[],calidad:[],epa:[],epaHist:[],epaDiario:[],feedback:[],compromisos:[],incidencias:[],outbound:[],
+  S={ejecutivos:[],asistencia:[],kpi:[],calidad:[],epa:[],epaHist:[],feedback:[],compromisos:[],incidencias:[],outbound:[],
       turnosMes:{titulo:"",dias:[],letras:[],filas:[]},config:JSON.parse(JSON.stringify(DEFAULT_CONFIG))};
   document.getElementById("loginEmail").value=""; document.getElementById("loginPass").value="";
   document.getElementById("loginErr").textContent="";
@@ -338,13 +338,12 @@ const FIELD_MAPS={
   calidad:{fecha:"fecha",auditor:"auditor",supervisor:"supervisor",rut:"rut",nombre:"nombre",tipo:"tipo",puntaje:"puntaje",critico:"critico",obs:"obs",estado:"estado"},
   epa:{rut:"rut",nombre:"nombre",e1snl:"e1snl",e2snl:"e2snl",e1ep:"e1ep",e2ep:"e2ep",transferencia:"transferencia",obs:"obs",supervisor:"supervisor"},
   epaHist:{mes:"mes",rut:"rut",nombre:"nombre",e1snl:"e1snl",e2snl:"e2snl",e1ep:"e1ep",e2ep:"e2ep",supervisor:"supervisor",obs:"obs"},
-  epaDiario:{fecha:"fecha",rut:"rut",nombre:"nombre",e1snl:"e1snl",e2snl:"e2snl",e1ep:"e1ep",e2ep:"e2ep",supervisor:"supervisor",obs:"obs"},
   feedback:{fecha:"fecha",hora:"hora",supervisor:"supervisor",rut:"rut",nombre:"nombre",tipo:"tipo",idr:"idr",tema:"tema",conclusiones:"conclusiones",resultado:"resultado",obs:"obs"},
   compromisos:{fecha:"fecha",rut:"rut",nombre:"nombre",supervisor:"supervisor",compromiso:"compromiso",fComp:"f_comp",fVenc:"f_venc",estado:"estado",evidencia:"evidencia",obs:"obs"},
   incidencias:{fecha:"fecha",rut:"rut",nombre:"nombre",tipo:"tipo",obs:"obs"},
   outbound:{rut:"rut",nombre:"nombre",contactados:"contactados",noContactados:"no_contactados",pctContacto:"pct_contacto",obs:"obs"}
 };
-const TABLE_KEY={ejecutivos:"progesys_ejecutivos",asistencia:"progesys_asistencia",kpi:"progesys_kpi",calidad:"progesys_calidad",epa:"progesys_epa",epaHist:"progesys_epa_historico",epaDiario:"progesys_epa_diario",feedback:"progesys_feedback",compromisos:"progesys_compromisos",incidencias:"progesys_incidencias",outbound:"progesys_outbound"};
+const TABLE_KEY={ejecutivos:"progesys_ejecutivos",asistencia:"progesys_asistencia",kpi:"progesys_kpi",calidad:"progesys_calidad",epa:"progesys_epa",epaHist:"progesys_epa_historico",feedback:"progesys_feedback",compromisos:"progesys_compromisos",incidencias:"progesys_incidencias",outbound:"progesys_outbound"};
 function toDb(map,o){ const out={}; Object.entries(map).forEach(([k,col])=>{ out[col]=(o[k]===undefined?null:o[k]); }); return out; }
 function fromDb(map,row){ const out={}; Object.entries(map).forEach(([k,col])=>{ out[k]=row[col]; }); return out; }
 
@@ -549,6 +548,7 @@ function light(v, meta, dir=1, tol=0.03){
 const MODULES = [
  {id:"dashboard", ic:"◧", name:"Dashboard", grp:"PANELES"},
  {id:"dashEjec",  ic:"◔", name:"Dashboard Ejecutivo", grp:"PANELES"},
+ {id:"progresys-outbound", ic:"☎", name:"Progresys Outbound", grp:"PANELES"},
  {id:"ejecutivos",ic:"⚉", name:"Ejecutivos", grp:"DATOS", key:"ejecutivos", hidden:true,
   cols:[{k:"rut",n:"Rut"},{k:"nombre",n:"Nombre completo"},{k:"supervisor",n:"Supervisor"},{k:"equipo",n:"Equipo"},{k:"cargo",n:"Cargo"},{k:"ingreso",n:"Fecha ingreso",t:"date"},{k:"jornada",n:"Jornada"},{k:"estado",n:"Estado",t:"sel",opts:["Activo","Inactivo","Vacaciones","Licencia"]},{k:"correo",n:"Correo"},{k:"telefono",n:"Teléfono"},{k:"obs",n:"Observaciones"}]},
  {id:"asistencia",ic:"◷", name:"Asistencia", grp:"DATOS", key:"asistencia", hidden:true,
@@ -563,8 +563,6 @@ const MODULES = [
   cols:[{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"contactados",n:"Contactados",t:"n"},{k:"noContactados",n:"No contactados",t:"n"},{k:"pctContacto",n:"% Contactado",t:"pct"},{k:"obs",n:"Observaciones"}]},
  {id:"epaHist",ic:"◴", name:"EPA Histórico", grp:"DATOS", key:"epaHist", hidden:true,
   cols:[{k:"mes",n:"Mes",t:"date"},{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"e1snl",n:"EPA 1 SNL",t:"pct"},{k:"e2snl",n:"EPA 2 SNL",t:"pct"},{k:"e1ep",n:"EPA 1 EP",t:"pct"},{k:"e2ep",n:"EPA 2 EP",t:"pct"},{k:"supervisor",n:"Supervisor"},{k:"obs",n:"Observaciones"}]},
- {id:"epaDiario",ic:"◵", name:"EPA Diario", grp:"DATOS", key:"epaDiario", hidden:true,
-  cols:[{k:"fecha",n:"Fecha",t:"date"},{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"e1snl",n:"EPA 1 SNL",t:"pct"},{k:"e2snl",n:"EPA 2 SNL",t:"pct"},{k:"e1ep",n:"EPA 1 EP",t:"pct"},{k:"e2ep",n:"EPA 2 EP",t:"pct"},{k:"supervisor",n:"Supervisor"},{k:"obs",n:"Observaciones"}]},
  {id:"turnos",ic:"▦", name:"Turnos del mes", grp:"DATOS", hidden:true},
  {id:"feedback",ic:"✎", name:"Feedback", grp:"GESTIÓN", key:"feedback", hidden:true,
   cols:[{k:"fecha",n:"Fecha",t:"date"},{k:"hora",n:"Hora",t:"time"},{k:"supervisor",n:"Supervisor"},{k:"rut",n:"Rut",t:"rut"},{k:"nombre",n:"Nombre"},{k:"tipo",n:"Tipo",t:"sel",opts:["Escucha","Feedback individual","Coaching","Reunión"]},{k:"idr",n:"ID"},{k:"tema",n:"Tema tratado"},{k:"conclusiones",n:"Conclusiones"},{k:"resultado",n:"Resultado",t:"sel",opts:["Positivo","Neutro","Negativo"]},{k:"obs",n:"Observaciones"}]},
@@ -628,10 +626,6 @@ async function importWB(wb, nombreArchivo){
       importAsistenciaFormula(rows); log.push(`Asistencia (${S.asistencia.length})`); return;
     }
     if(hasAll(["horaingreso","horasalida"])){ importAsistencia(rows); log.push(`Asistencia (${S.asistencia.length})`); return; }
-    if(hasAll(["fecha","rut"]) && hasAny(["epa1snl","epa2snl","epa1ep","epa2ep"])){
-      const nuevos=mapRows(rows,{fecha:["fecha"],rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],supervisor:["supervisor"],obs:["observaciones"]},{fecha:"date",e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n"}).filter(r=>r.rut&&r.fecha);
-      mergeEpaDiario(nuevos); log.push(`EPA Diario (${nuevos.length})`); return;
-    }
 
     /* Detección por nombre de hoja para el resto de módulos */
     if(n.includes("config")){ importConfig(rows); log.push("Config"); return; }
@@ -641,10 +635,6 @@ async function importWB(wb, nombreArchivo){
     if(n.includes("kpi")){ S.kpi=mapRows(rows,{rut:["rut"],nombre:["nombre"],llamadas:["llamadas"],saliente:["saliente"],tmo:["tmoseg","tmo"],disp:["disponibilidad"],adh:["adherencia"],ocup:["ocupacion"],transf:["transferencias"],cumple:["cumplimientometa","cumplimiento"],supervisor:["supervisorauto","supervisor"],contact:["contactabilidadout","contactabilidad"],tipificaciones:["tipificaciones","tipificacion"]},{llamadas:"n",saliente:"n",tmo:"n",disp:"n",adh:"n",ocup:"n",transf:"n",contact:"n",tipificaciones:"n"}); log.push(`KPI (${S.kpi.length})`); return; }
     if(n.includes("calidad")){ S.calidad=mapRows(rows,{fecha:["fecha"],auditor:["auditor"],supervisor:["supervisor"],rut:["rut"],nombre:["nombre"],tipo:["tipodeauditoria","tipo"],puntaje:["puntaje0100","puntaje"],critico:["errorcritico"],obs:["observaciones"],estado:["estado"]},{fecha:"date",puntaje:"n"}); log.push(`Calidad (${S.calidad.length})`); return; }
     if(n.includes("epahistorico")||n.includes("historico")){ S.epaHist=mapRows(rows,{mes:["mes"],rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],supervisor:["supervisor"],obs:["observaciones"]},{mes:"date",e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n"}).filter(r=>r.rut); log.push(`EPA Histórico (${S.epaHist.length})`); return; }
-    if(n.includes("epadiario")){
-      const nuevos=mapRows(rows,{fecha:["fecha"],rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],supervisor:["supervisor"],obs:["observaciones"]},{fecha:"date",e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n"}).filter(r=>r.rut&&r.fecha);
-      mergeEpaDiario(nuevos); log.push(`EPA Diario (${nuevos.length})`); return;
-    }
     if(n==="epa"||n.startsWith("epa")){ S.epa=mapRows(rows,{rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],transferencia:["transferencia"],obs:["observaciones"],supervisor:["supervisorauto","supervisor"]},{e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n",transferencia:"n"}); log.push(`EPA (${S.epa.length})`); return; }
     if(n.includes("outbound")){ S.outbound=mapRows(rows,{rut:["rut"],nombre:["nombre"],contactados:["contactados"],noContactados:["nocontactados"],pctContacto:["contacto"],obs:["observaciones"]},{contactados:"n",noContactados:"n",pctContacto:"n"}); log.push(`Outbound (${S.outbound.length})`); return; }
     if(n.includes("feedback")||n.includes("escucha")){ S.feedback=mapRows(rows,{fecha:["fecha"],hora:["hora"],supervisor:["supervisor"],rut:["rut"],nombre:["nombre"],tipo:["tipo"],idr:["id"],tema:["tematratado","tema"],conclusiones:["conclusiones"],resultado:["resultado"],obs:["observaciones"]},{fecha:"date",hora:"time"}).filter(r=>r.fecha||r.nombre||r.tema); log.push(`Feedback (${S.feedback.length})`); return; }
@@ -660,7 +650,7 @@ async function importWB(wb, nombreArchivo){
 /* Si Nombre llegó vacío o como texto de fórmula sin calcular (el archivo no se guardó en Excel
    antes de subirlo), lo completa igual buscando por Rut en Ejecutivos — red de seguridad. */
 function backfillNombres(){
-  const arrs=[S.kpi,S.calidad,S.epa,S.epaHist,S.epaDiario,S.outbound];
+  const arrs=[S.kpi,S.calidad,S.epa,S.epaHist,S.outbound];
   arrs.forEach(arr=>{ arr.forEach(o=>{
     if(o.rut && (!o.nombre || String(o.nombre).startsWith("="))){
       const e=S.ejecutivos.find(e=>normRut(e.rut)===normRut(o.rut)); if(e) o.nombre=e.nombre;
@@ -700,14 +690,6 @@ function mergeAsistencia(nuevos){
   const nuevasClaves=new Set(nuevos.map(key));
   const conservados=S.asistencia.filter(o=>!nuevasClaves.has(key(o)));
   S.asistencia=conservados.concat(nuevos);
-}
-/* Igual que mergeAsistencia pero para EPA Diario: cada importación reemplaza solo los días (rut+fecha)
-   que trae el archivo nuevo y conserva el resto del historial diario ya cargado. */
-function mergeEpaDiario(nuevos){
-  const key=o=>normRut(o.rut)+"|"+(o.fecha||"");
-  const nuevasClaves=new Set(nuevos.map(key));
-  const conservados=S.epaDiario.filter(o=>!nuevasClaves.has(key(o)));
-  S.epaDiario=conservados.concat(nuevos);
 }
 /* Recalcula los campos derivados de Asistencia (los que en el Excel modelo son fórmulas:
    Nombre por Rut, Turno del día, Minutos de atraso, Minutos de colación, Tiempo total descanso,
@@ -882,7 +864,7 @@ function importConfig(rows){
 function exportAll(){
   const wb=XLSX.utils.book_new();
   const add=(name,cols,data)=>{ const aoa=[cols.map(c=>c.n)].concat(data.map(r=>cols.map(c=>r[c.k]??""))); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),name); };
-  ["ejecutivos","asistencia","kpi","calidad","epa","epaHist","epaDiario","feedback","compromisos","incidencias","outbound"].forEach(k=>{
+  ["ejecutivos","asistencia","kpi","calidad","epa","epaHist","feedback","compromisos","incidencias","outbound"].forEach(k=>{
     const m=MODULES.find(x=>x.key===k); if(m) add(m.name.replace(/ \(.*\)/,"").slice(0,31), m.cols, S[k]); });
   if(S.turnosMes.filas.length){ const t=S.turnosMes;
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["N°","NOMBRE",...t.dias],["","",...t.letras],...t.filas.map(f=>[f.n,f.nombre,...f.turnos])]),"Turnos"); }
@@ -935,6 +917,7 @@ function render(id){
   const m=MOD[id], el=document.getElementById("pg-"+id);
   if(id==="dashboard") return renderDash(el);
   if(id==="dashEjec")  return renderDashEjec(el);
+  if(id==="progresys-outbound") return renderOutbound(el);
   if(id==="turnos")    return renderTurnos(el);
   if(id==="config")    return renderConfig(el);
   if(id==="instrucciones") return renderInstr(el);
@@ -1089,11 +1072,11 @@ function renderDash(el){
         .sort((a,b)=>b.score-a.score).slice(0,3);
       if(!rank.length) return `<div class="empty">Aún no hay datos de EPA del mes en curso para armar el ranking.</div>`;
       const medallas=["🥇","🥈","🥉"];
-      return `<div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th style="text-align:center">EPA 1 SNL</th><th style="text-align:center">EPA 2 EP</th><th style="text-align:center">Promedio</th></tr></thead><tbody>
+      return `<div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th>EPA 1 SNL</th><th>EPA 2 EP</th><th>Promedio</th></tr></thead><tbody>
         ${rank.map((x,i)=>`<tr><td style="font-size:18px">${medallas[i]}</td><td>${x.nombre}</td>
-          <td class="num" style="text-align:center"><span class="pill ${light(x.e1snl,M.epa1)}">${pct(x.e1snl)}</span></td>
-          <td class="num" style="text-align:center"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
-          <td class="num" style="text-align:center;font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
+          <td class="num"><span class="pill ${light(x.e1snl,M.epa1)}">${pct(x.e1snl)}</span></td>
+          <td class="num"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
+          <td class="num" style="font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
       </tbody></table></div>`;
     })()}
   </div>
@@ -1153,7 +1136,6 @@ function bars(execs,key,meta){
 /* ════════════════════════ Dashboard Ejecutivo ════════════════════════ */
 let INDICADORES_PANEL_ABIERTO=false;
 let INGRESOS_PANEL_ABIERTO=false;
-let EPA_DIARIO_PANEL_ABIERTO=false;
 let SEL_EXEC = localStorage.getItem("progesys_SEL_EXEC") || "";
 let PERFIL = localStorage.getItem("progesys_PERFIL") || "coordinador";
 let SEL_SUPERVISOR = localStorage.getItem("progesys_SEL_SUPERVISOR") || "";
@@ -1184,7 +1166,6 @@ function renderDashEjec(el){
   const asis=S.asistencia.filter(r=>mismoExec(r,e));
   const cal=S.calidad.filter(r=>mismoExec(r,e));
   const hist=S.epaHist.filter(r=>mismoExec(r,e)).sort((a,b)=>String(a.mes).localeCompare(String(b.mes)));
-  const epaDia=S.epaDiario.filter(r=>mismoExec(r,e)).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
   const card=(n,v,meta,dir,f)=>{ const L=light(v,meta,dir); return `<div class="card"><div class="k">${n}<span class="dot ${L}"></span></div><div class="v">${f(v)}</div><div class="m">Meta ${dir===1&&meta<=1?pct0(meta):f(meta)}</div></div>`; };
   el.innerHTML=`
   ${previsualizando? `
@@ -1270,19 +1251,12 @@ function renderDashEjec(el){
           <td class="num"><span class="pill ${light(h.e1ep,M.epa1,1)}">${pct0(h.e1ep)}</span></td></tr>`).join("")}
       </tbody></table></div>` : `<div class="empty">Sin historial EPA para este ejecutivo.</div>`}
     </div>
-  </div>
-  <details class="panel ind-panel" ${EPA_DIARIO_PANEL_ABIERTO?"open":""} ontoggle="EPA_DIARIO_PANEL_ABIERTO=this.open">
-    <summary>EPA diario <span class="ind-count">${epaDia.length} días</span><span class="ind-arrow">▸</span></summary>
-    <div class="ind-body">
-      ${epaDia.length? `<div class="tblwrap" style="max-height:360px;overflow:auto"><table><thead><tr><th>Fecha</th><th style="text-align:center">EPA 1 SNL</th><th style="text-align:center">EPA 2 SNL</th><th style="text-align:center">EPA 1 EP</th><th style="text-align:center">EPA 2 EP</th></tr></thead><tbody>
-        ${epaDia.map(d=>`<tr><td>${d.fecha||"—"}</td>
-          <td class="num" style="text-align:center"><span class="pill ${light(d.e1snl,M.epa1,1)}">${pct0(d.e1snl)}</span></td>
-          <td class="num" style="text-align:center"><span class="pill ${light(d.e2snl,M.epa2,1)}">${pct0(d.e2snl)}</span></td>
-          <td class="num" style="text-align:center"><span class="pill ${light(d.e1ep,M.epa1,1)}">${pct0(d.e1ep)}</span></td>
-          <td class="num" style="text-align:center"><span class="pill ${light(d.e2ep,M.epa2,1)}">${pct0(d.e2ep)}</span></td></tr>`).join("")}
-      </tbody></table></div>` : `<div class="empty">Sin registros de EPA diario para este ejecutivo. Sube la hoja "EPA_Diario" (Fecha, Rut, Nombre, EPA 1 SNL, EPA 2 SNL, EPA 1 EP, EPA 2 EP, Supervisor, Observaciones) con el botón Importar Excel.</div>`}
-    </div>
-  </details>`;
+  </div>`;
+}
+
+/* ════════════════════════ Progresys Outbound (iframe) ════════════════════════ */
+function renderOutbound(el){
+  el.innerHTML=`<iframe src="https://manuelmc1979.github.io/progresys-outbound-frontend/" style="width:100%;height:calc(100vh - 80px);border:none;border-radius:12px"></iframe>`;
 }
 
 /* ════════════════════════ Turnos ════════════════════════ */
