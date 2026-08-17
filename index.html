@@ -549,6 +549,8 @@ const MODULES = [
  {id:"dashboard", ic:"◧", name:"Dashboard", grp:"PANELES"},
  {id:"dashEjec",  ic:"◔", name:"Dashboard Ejecutivo", grp:"PANELES"},
  {id:"progresys-outbound", ic:"☎", name:"Progresys Outbound", grp:"PANELES"},
+ {id:"control-snl", ic:"🔐", name:"Control SNL", grp:"PANELES"},
+ {id:"calidad-app", ic:"✓", name:"Calidad", grp:"PANELES"},
  {id:"ejecutivos",ic:"⚉", name:"Ejecutivos", grp:"DATOS", key:"ejecutivos", hidden:true,
   cols:[{k:"rut",n:"Rut"},{k:"nombre",n:"Nombre completo"},{k:"supervisor",n:"Supervisor"},{k:"equipo",n:"Equipo"},{k:"cargo",n:"Cargo"},{k:"ingreso",n:"Fecha ingreso",t:"date"},{k:"jornada",n:"Jornada"},{k:"estado",n:"Estado",t:"sel",opts:["Activo","Inactivo","Vacaciones","Licencia"]},{k:"correo",n:"Correo"},{k:"telefono",n:"Teléfono"},{k:"obs",n:"Observaciones"}]},
  {id:"asistencia",ic:"◷", name:"Asistencia", grp:"DATOS", key:"asistencia", hidden:true,
@@ -917,7 +919,9 @@ function render(id){
   const m=MOD[id], el=document.getElementById("pg-"+id);
   if(id==="dashboard") return renderDash(el);
   if(id==="dashEjec")  return renderDashEjec(el);
-  if(id==="progresys-outbound") return renderOutbound(el);
+  if(id==="progresys-outbound") return renderIframe(el, "https://manuelmc1979.github.io/progresys-outbound-frontend/");
+  if(id==="control-snl") return renderIframe(el, "https://controlsnl.onrender.com/login?error=1");
+  if(id==="calidad-app") return renderIframe(el, "https://manuelmc1979.github.io/CALIDAD/");
   if(id==="turnos")    return renderTurnos(el);
   if(id==="config")    return renderConfig(el);
   if(id==="instrucciones") return renderInstr(el);
@@ -1254,9 +1258,9 @@ function renderDashEjec(el){
   </div>`;
 }
 
-/* ════════════════════════ Progresys Outbound (iframe) ════════════════════════ */
-function renderOutbound(el){
-  el.innerHTML=`<iframe src="https://manuelmc1979.github.io/progresys-outbound-frontend/" style="width:100%;height:calc(100vh - 80px);border:none;border-radius:12px"></iframe>`;
+/* ════════════════════════ Iframes (Outbound, Control SNL, Calidad) ════════════════════════ */
+function renderIframe(el, url){
+  el.innerHTML=`<iframe src="${url}" style="width:100%;height:calc(100vh - 80px);border:none;border-radius:12px"></iframe>`;
 }
 
 /* ════════════════════════ Turnos ════════════════════════ */
