@@ -1268,10 +1268,9 @@ function renderIframe(el, url){
       ⬆️ Abrir en nueva pestaña
     </button>
     <p style="font-size:12px;color:var(--ink-faint);margin-top:20px">Si la ventana no se abre automáticamente, haz click en el botón.</p>
-  </div>
-  <script>
-    window.open('${url}', '_blank');
-  </script>`;
+  </div>`;
+  // Abre en nueva pestaña automáticamente
+  setTimeout(() => window.open(url, '_blank'), 500);
 }
 
 /* ════════════════════════ Turnos ════════════════════════ */
