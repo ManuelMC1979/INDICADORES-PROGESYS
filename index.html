@@ -1217,7 +1217,7 @@ function renderDash(el){
       Contactabilidad, TMO, Calidad y Tipificaciones se muestran arriba solo a nivel mensual: las hojas de origen (KPI_Mensual, Calidad, Outbound) no traen una fecha por registro.
     </div>
     ${ultimasFechas.length? `<div class="tblwrap" style="margin-top:16px"><table>
-      <thead><tr><th>Fecha</th><th>Adherencia</th><th>Atrasos</th><th>EPA 1 SNL</th><th>EPA 1 EP</th></tr></thead>
+      <thead><tr><th>Fecha</th><th style="text-align:right">Adherencia</th><th style="text-align:right">Atrasos</th><th style="text-align:right">EPA 1 SNL</th><th style="text-align:right">EPA 1 EP</th></tr></thead>
       <tbody>${ultimasFechas.slice().reverse().map(f=>{ const d=metricsPorDia(f);
         return `<tr${f===diaSel?' style="background:var(--teal-soft)"':''}><td>${new Date(f+"T00:00:00").toLocaleDateString("es-CL",{weekday:"short",day:"numeric",month:"short"})}</td>
           <td class="num"><span class="pill ${light(d.adherencia.v,d.adherencia.meta,1)}">${pct(d.adherencia.v)}</span></td>
