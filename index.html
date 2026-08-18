@@ -1131,6 +1131,31 @@ function metricsPorDia(fecha){
     atrasosMin:{v:sum(A.map(r=>r.atrasoMin)), meta:0, dir:-1, f:v=>fx(v,0), tol:0}
   };
 }
+/* Igual que metricsPorDia(), pero promediando todos los registros dentro de un rango de
+   fechas (ambos extremos incluidos; cualquiera de los dos puede venir vacío). */
+function metricsPorRango(desde,hasta){
+  const M=S.config.metas;
+  const enRango=f=> f && (!desde||f>=desde) && (!hasta||f<=hasta);
+  const A=S.asistencia.filter(r=>enRango(r.fecha));
+  const E=S.epaDiario.filter(r=>enRango(r.fecha));
+  const atrasos=A.filter(r=>(r.atrasoMin??0)>0);
+  const diasRango=new Set([...A.map(r=>r.fecha),...E.map(r=>r.fecha)].filter(Boolean));
+  const ejecutivosRango=new Set(A.map(r=>normRut(r.rut)||norm(r.nombre)).filter(Boolean));
+  return {
+    nDias:diasRango.size, nEjecutivos:ejecutivosRango.size,
+    adherencia:{v:avg(A.map(r=>r.adh)), meta:M.adherencia, dir:1, f:pct},
+    e1snl:{v:avg(E.map(r=>r.e1snl)), meta:M.epa1, dir:1, f:pct},
+    e1ep:{v:avg(E.map(r=>r.e1ep)), meta:M.epa1, dir:1, f:pct},
+    e2snl:{v:avg(E.map(r=>r.e2snl)), meta:M.epa2, dir:1, f:pct},
+    e2ep:{v:avg(E.map(r=>r.e2ep)), meta:M.epa2, dir:1, f:pct},
+    banoMin:{v:avg(A.map(r=>r.banoMin)), meta:M.banoMin, dir:-1, f:v=>fx(v)},
+    banoVec:{v:avg(A.map(r=>r.banoVec)), meta:M.banoVeces, dir:-1, f:v=>fx(v)},
+    descMin:{v:avg(A.map(r=>(r.d1??0)+(r.d2??0))), meta:M.descansosMin, dir:-1, f:v=>fx(v)},
+    colMin:{v:avg(A.map(r=>r.colMin)), meta:M.colacionMin, dir:-1, f:v=>fx(v)},
+    atrasosN:{v:atrasos.length, meta:0, dir:-1, f:v=>fx(v,0), tol:0},
+    atrasosMin:{v:sum(A.map(r=>r.atrasoMin)), meta:0, dir:-1, f:v=>fx(v,0), tol:0}
+  };
+}
 function fechaLarga(fecha){
   if(!fecha) return "—";
   const d=new Date(fecha+"T00:00:00");
@@ -1148,6 +1173,10 @@ function irADia(delta){
 }
 function irAHoyDash(){ DIA_SEL=null; render("dashboard"); }
 function cambiarDiaDash(v){ DIA_SEL=v||null; render("dashboard"); }
+let MODO_DIA_DASH="dia"; /* "dia" | "rango" */
+let RANGO_DIA_DESDE="", RANGO_DIA_HASTA="";
+function verModoDiaDash(modo){ MODO_DIA_DASH=modo; render("dashboard"); }
+function cambiarRangoDiaDash(campo,v){ if(campo==="desde") RANGO_DIA_DESDE=v; else RANGO_DIA_HASTA=v; render("dashboard"); }
 function renderDash(el){
   const G=metricsGlobal(), execs=byExec(), M=S.config.metas;
   const IND=S.config.indicadores||{};
@@ -1157,8 +1186,10 @@ function renderDash(el){
   const esCoordinador = SESION && SESION.rol==="coordinador";
   const fechasDia=fechasConDatos();
   const diaSel=diaActualDash();
-  const G2=diaSel? metricsPorDia(diaSel) : null;
+  const enModoRango=MODO_DIA_DASH==="rango";
+  const G2=enModoRango? metricsPorRango(RANGO_DIA_DESDE,RANGO_DIA_HASTA) : (diaSel? metricsPorDia(diaSel) : null);
   const ultimasFechas=fechasDia.slice(-10);
+  const enRangoSel=f=> enModoRango? ((RANGO_DIA_DESDE||RANGO_DIA_HASTA) && (!RANGO_DIA_DESDE||f>=RANGO_DIA_DESDE) && (!RANGO_DIA_HASTA||f<=RANGO_DIA_HASTA)) : f===diaSel;
   el.innerHTML=`
   <div class="panel" style="background:linear-gradient(120deg,var(--navy) 0%,var(--navy-3) 70%,var(--teal) 160%);color:#fff">
     <div style="font-size:11px;letter-spacing:.2em;color:var(--teal-2);font-weight:700">PROGESYS · CALL CENTER</div>
@@ -1208,8 +1239,13 @@ function renderDash(el){
     })()}
   </div>
   <div class="panel">
-    <h2>Indicadores por día</h2>
+    <h2>Indicadores por ${enModoRango?"rango":"día"}</h2>
     ${!fechasDia.length? `<div class="empty">Aún no hay Asistencia ni EPA diario cargados para poder ver indicadores por día.</div>` : `
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn btn-sm ${!enModoRango?"btn-teal":"btn-ghost"}" onclick="verModoDiaDash('dia')">Por día</button>
+      <button class="btn btn-sm ${enModoRango?"btn-teal":"btn-ghost"}" onclick="verModoDiaDash('rango')">Por rango</button>
+    </div>
+    ${!enModoRango? `
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">
       <button class="btn btn-ghost btn-sm" onclick="irADia(-1)" ${fechasDia.indexOf(diaSel)<=0?"disabled":""}>‹</button>
       <div>
@@ -1219,7 +1255,14 @@ function renderDash(el){
       <button class="btn btn-ghost btn-sm" onclick="irADia(1)" ${fechasDia.indexOf(diaSel)>=fechasDia.length-1?"disabled":""}>›</button>
       <input type="date" value="${diaSel}" min="${fechasDia[0]}" max="${fechasDia[fechasDia.length-1]}" style="font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit" onchange="cambiarDiaDash(this.value)">
       <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:var(--teal);background:var(--teal-soft);border:1px solid #BFE8E4" onclick="irAHoyDash()">Hoy</button>
-    </div>
+    </div>` : `
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+      <span style="font-size:12px;color:var(--ink-faint)">Desde</span>
+      <input type="date" value="${RANGO_DIA_DESDE}" min="${fechasDia[0]}" max="${fechasDia[fechasDia.length-1]}" style="font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit" onchange="cambiarRangoDiaDash('desde',this.value)">
+      <span style="font-size:12px;color:var(--ink-faint)">Hasta</span>
+      <input type="date" value="${RANGO_DIA_HASTA}" min="${fechasDia[0]}" max="${fechasDia[fechasDia.length-1]}" style="font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit" onchange="cambiarRangoDiaDash('hasta',this.value)">
+      <div style="margin-left:auto;font-size:12px;color:var(--ink-faint)">${G2.nDias} días con datos · ${G2.nEjecutivos} ejecutivos</div>
+    </div>`}
     <div class="cards">
       ${card("adherencia","Adherencia",G2.adherencia)}
       ${card("atrasosN","Atrasos",G2.atrasosN,fx(G2.atrasosMin.v,0)+" min acumulados")}
@@ -1236,7 +1279,7 @@ function renderDash(el){
     ${ultimasFechas.length? `<div class="tblwrap" style="margin-top:16px"><table>
       <thead><tr><th>Fecha</th><th style="text-align:right">Adherencia</th><th style="text-align:right">Atrasos</th><th style="text-align:right">EPA 1 SNL</th><th style="text-align:right">EPA 1 EP</th></tr></thead>
       <tbody>${ultimasFechas.slice().reverse().map(f=>{ const d=metricsPorDia(f);
-        return `<tr${f===diaSel?' style="background:var(--teal-soft)"':''}><td>${new Date(f+"T00:00:00").toLocaleDateString("es-CL",{weekday:"short",day:"numeric",month:"short"})}</td>
+        return `<tr${enRangoSel(f)?' style="background:var(--teal-soft)"':''}><td>${new Date(f+"T00:00:00").toLocaleDateString("es-CL",{weekday:"short",day:"numeric",month:"short"})}</td>
           <td class="num"><span class="pill ${light(d.adherencia.v,d.adherencia.meta,1)}">${pct(d.adherencia.v)}</span></td>
           <td class="num">${d.atrasosN.v}</td>
           <td class="num"><span class="pill ${light(d.e1snl.v,d.e1snl.meta,1)}">${pct(d.e1snl.v)}</span></td>
