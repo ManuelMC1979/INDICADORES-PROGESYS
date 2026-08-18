@@ -970,6 +970,9 @@ function byExec(){
 
 /* ════════════════════════ render genérico de módulos de datos ════════════════════════ */
 const FILTERS={};
+const RANGO={};
+function cambiarRango(id,campo,valor){ RANGO[id]=RANGO[id]||{}; RANGO[id][campo]=valor; render(id); }
+function limpiarRango(id){ RANGO[id]={desde:"",hasta:""}; render(id); }
 function render(id){
   const m=MOD[id], el=document.getElementById("pg-"+id);
   if(id==="dashboard") return renderDash(el);
@@ -984,12 +987,26 @@ function render(id){
 }
 function renderTable(el,m){
   const data=S[m.key]||[], q=(FILTERS[m.id]||"").toLowerCase();
-  const rows=q? data.filter(r=>Object.values(r).some(v=>String(v??"").toLowerCase().includes(q))) : data;
+  let rows=q? data.filter(r=>Object.values(r).some(v=>String(v??"").toLowerCase().includes(q))) : data;
+  const tieneFecha=m.cols.some(c=>c.k==="fecha");
+  const rango=RANGO[m.id]||{};
+  if(tieneFecha && (rango.desde||rango.hasta)){
+    rows=rows.filter(r=>{ if(!r.fecha) return false;
+      if(rango.desde && r.fecha<rango.desde) return false;
+      if(rango.hasta && r.fecha>rango.hasta) return false;
+      return true; });
+  }
   el.innerHTML=`
   <div class="panel">
-    <h2>${m.name} <span style="font-weight:400;color:var(--ink-faint);font-size:12px">· ${data.length} registros</span></h2>
+    <h2>${m.name} <span style="font-weight:400;color:var(--ink-faint);font-size:12px">· ${rows.length} de ${data.length} registros</span></h2>
     <div class="toolbar">
       <input type="search" placeholder="Buscar en ${m.name}…" value="${FILTERS[m.id]||""}" oninput="FILTERS['${m.id}']=this.value;render('${m.id}')">
+      ${tieneFecha? `
+      <span style="font-size:12px;color:var(--ink-faint)">Desde</span>
+      <input type="date" value="${rango.desde||""}" style="font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit" onchange="cambiarRango('${m.id}','desde',this.value)">
+      <span style="font-size:12px;color:var(--ink-faint)">Hasta</span>
+      <input type="date" value="${rango.hasta||""}" style="font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit" onchange="cambiarRango('${m.id}','hasta',this.value)">
+      ${(rango.desde||rango.hasta)? `<button class="btn btn-ghost btn-sm" onclick="limpiarRango('${m.id}')">✕ Limpiar rango</button>` : ""}` : ""}
       <button class="btn btn-teal btn-sm" onclick="openForm('${m.id}')">＋ Nuevo registro</button>
     </div>
     <div id="form-${m.id}"></div>
