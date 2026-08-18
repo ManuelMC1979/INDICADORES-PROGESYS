@@ -399,12 +399,31 @@ async function syncTable(key){
     if(arr.length){
       /* Inserta primero y borra los registros viejos recién después de que la inserción
          resulte exitosa — así, si la inserción falla (p.ej. columnas que no existen en la
-         tabla), no se pierde lo que ya había en la nube. */
+         tabla), no se pierde lo que ya había en la nube. Si la tabla tiene Rut único (ej.
+         Ejecutivos) el insert choca con las filas ya existentes (error 23505): en ese caso
+         se reintenta con upsert (actualiza en vez de duplicar), y la limpieza solo borra las
+         filas viejas cuyo Rut ya NO viene en este lote — nunca las recién actualizadas.
+         En tablas de eventos (Asistencia, EPA diario, etc., sin Rut único, donde un mismo
+         Rut puede repetirse en varias filas) se conserva el borrado simple por rango de id,
+         ya que ahí el lote SIEMPRE reemplaza el histórico completo. */
+      const payload=arr.map(o=>toDb(map,o));
       const {data:antes}=await SB.from(table).select("id").order("id",{ascending:false}).limit(1);
       const maxIdAntes=antes&&antes.length? antes[0].id : 0;
-      const {error}=await SB.from(table).insert(arr.map(o=>toDb(map,o)));
+      let {error}=await SB.from(table).insert(payload);
+      let rutUnico=false;
+      if(error && error.code==="23505"){
+        rutUnico=true;
+        ({error}=await SB.from(table).upsert(payload,{onConflict:"rut"}));
+      }
       if(error) throw error;
-      await SB.from(table).delete().gt("id",0).lte("id",maxIdAntes);
+      if(rutUnico){
+        const rutsNuevos=new Set(arr.map(o=>normRut(o.rut)).filter(Boolean));
+        const {data:viejos}=await SB.from(table).select("id,rut").lte("id",maxIdAntes);
+        const idsBorrar=(viejos||[]).filter(r=>r.rut && !rutsNuevos.has(normRut(r.rut))).map(r=>r.id);
+        if(idsBorrar.length) await SB.from(table).delete().in("id",idsBorrar);
+      }else{
+        await SB.from(table).delete().gt("id",0).lte("id",maxIdAntes);
+      }
     }else{
       await SB.from(table).delete().gt("id",0);
     }
