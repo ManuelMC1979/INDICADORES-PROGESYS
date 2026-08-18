@@ -1143,6 +1143,11 @@ function renderDash(el){
   const G2=diaSel? metricsPorDia(diaSel) : null;
   const ultimasFechas=fechasDia.slice(-10);
   el.innerHTML=`
+  <div class="panel" style="background:linear-gradient(120deg,var(--navy) 0%,var(--navy-3) 70%,var(--teal) 160%);color:#fff">
+    <div style="font-size:11px;letter-spacing:.2em;color:var(--teal-2);font-weight:700">PROGESYS · CALL CENTER</div>
+    <div style="font-size:20px;font-weight:800;margin-top:4px">Dashboard — Vista Supervisor</div>
+    <div style="font-size:12.5px;opacity:.75;margin-top:5px">Ejecutivos activos: ${activos} · Registros de asistencia: ${S.asistencia.length} · Auditorías de calidad: ${S.calidad.length}</div>
+  </div>
   ${esCoordinador? `
   <details class="panel ind-panel" ${INDICADORES_PANEL_ABIERTO?"open":""} ontoggle="INDICADORES_PANEL_ABIERTO=this.open">
     <summary>Configurar indicadores <span class="ind-count">${INDICADORES.filter(i=>IND[i.k]!==false).length}/${INDICADORES.length} activos</span><span class="ind-arrow">▸</span></summary>
@@ -1154,11 +1159,6 @@ function renderDash(el){
       </div>
     </div>
   </details>` : ""}
-  <div class="panel" style="background:linear-gradient(120deg,var(--navy) 0%,var(--navy-3) 70%,var(--teal) 160%);color:#fff">
-    <div style="font-size:11px;letter-spacing:.2em;color:var(--teal-2);font-weight:700">PROGESYS · CALL CENTER</div>
-    <div style="font-size:20px;font-weight:800;margin-top:4px">Dashboard — Vista Supervisor</div>
-    <div style="font-size:12.5px;opacity:.75;margin-top:5px">Ejecutivos activos: ${activos} · Registros de asistencia: ${S.asistencia.length} · Auditorías de calidad: ${S.calidad.length}</div>
-  </div>
   <div class="cards">
     ${card("adherencia","Adherencia",G.adherencia)} ${card("contactabilidad","Contactabilidad",G.contactabilidad)}
     ${card("e1snl","EPA 1 SNL",G.e1snl)} ${card("e1ep","EPA 1 EP",G.e1ep)}
