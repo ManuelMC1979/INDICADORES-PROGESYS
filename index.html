@@ -391,6 +391,12 @@ async function pullTurnos(){
   S.turnosMes={titulo, dias, letras:dias.map(()=>""), filas};
 }
 
+/* Columnas que forman la clave natural/única de cada tabla en Supabase, para las que hay que
+   hacer upsert en vez de insert directo (evita duplicados al re-sincronizar). No siempre se
+   puede deducir esto del mensaje de error de Postgres (lo oculta si el rol no tiene permiso de
+   lectura irrestricta sobre la fila en conflicto, como pasa con las políticas por rol de EPA
+   diario), así que se declara explícitamente para las tablas conocidas. */
+const UPSERT_KEY={ejecutivos:["rut"], epaDiario:["rut","fecha"]};
 /* Sube una sola tabla a la nube (reemplaza todo su contenido por el de S[key]) */
 async function syncTable(key){
   if(!SB) return;
@@ -414,8 +420,8 @@ async function syncTable(key){
       let {error}=await SB.from(table).insert(payload);
       let conflictCols=null;
       if(error && error.code==="23505"){
-        const m=/Key \(([^)]+)\)=/.exec(error.details||"");
-        conflictCols = m? m[1].split(",").map(s=>s.trim()) : ["rut"];
+        if(UPSERT_KEY[key]) conflictCols=UPSERT_KEY[key];
+        else{ const m=/Key \(([^)]+)\)=/.exec(error.details||""); conflictCols = m? m[1].split(",").map(s=>s.trim()) : ["rut"]; }
         ({error}=await SB.from(table).upsert(payload,{onConflict:conflictCols.join(",")}));
       }
       if(error) throw error;
