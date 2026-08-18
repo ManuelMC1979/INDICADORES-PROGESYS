@@ -975,28 +975,18 @@ function top3Ranking(execs){
     .filter(x=>x.score!=null)
     .sort((a,b)=>b.score-a.score).slice(0,3);
 }
-/* Arma un resumen breve (global, Top 3, alertas) y lo copia al portapapeles para pegarlo en
-   Teams. Reutiliza metricsGlobal()/top3Ranking()/light() para que coincida siempre con lo que
-   se ve en las tarjetas del Dashboard — nunca inventa un número distinto al de pantalla. */
+/* Arma un resumen breve (EPA 1 SNL/EP global y por Top 3) y lo copia al portapapeles para
+   pegarlo en Teams. Reutiliza metricsGlobal()/top3Ranking() para que coincida siempre con lo
+   que se ve en las tarjetas del Dashboard — nunca inventa un número distinto al de pantalla. */
 function resumenTeams(){
-  const G=metricsGlobal(), execs=byExec(), IND=S.config.indicadores||{};
+  const G=metricsGlobal(), execs=byExec();
   const rank=top3Ranking(execs);
   const fecha=new Date().toLocaleDateString("es-CL",{day:"numeric",month:"short",year:"numeric"});
-  const epaProm=avg([G.e1snl.v,G.e1ep.v,G.e2snl.v,G.e2ep.v]);
-  const top3=rank.length? rank.map(x=>`${x.nombre} ${pct(x.score)}`).join(", ") : "sin datos aún";
-  const items=[
-    ["adherencia","Adherencia",G.adherencia],["contactabilidad","Contactabilidad",G.contactabilidad],
-    ["e1snl","EPA 1 SNL",G.e1snl],["e1ep","EPA 1 EP",G.e1ep],["e2snl","EPA 2 SNL",G.e2snl],["e2ep","EPA 2 EP",G.e2ep],
-    ["calidad","Calidad",G.calidad],["tmo","TMO",G.tmo],["tipificaciones","Tipificaciones",G.tipificaciones],["transferenciaEpa","Transferencia EPA",G.transferenciaEpa],
-    ["banoMin","Baño (min)",G.banoMin],["banoVec","Baño (veces)",G.banoVec],["descMin","Descansos",G.descMin],["colMin","Colación",G.colMin],
-    ["atrasosN","Atrasos (cantidad)",G.atrasosN],["atrasosMin","Atrasos (min)",G.atrasosMin]
-  ].filter(([k])=>IND[k]!==false);
-  const rojos=items.filter(([,,g])=>light(g.v,g.meta,g.dir,g.tol??0.03)==="R").map(([,n])=>n);
-  const alerta=rojos.length? rojos.slice(0,3).join(", ") : "sin alertas";
+  const top3=rank.length? rank.map(x=>`${x.nombre} (SNL ${pct(x.e1snl)} · EP ${pct(x.e1ep)})`).join(", ") : "sin datos aún";
   const texto=`📊 PROGESYS — Indicadores · ${fecha}
-🟢 Adherencia ${pct(G.adherencia.v)} · Contactabilidad ${pct(G.contactabilidad.v)} · EPA ${pct(epaProm)} prom
+🟢 EPA 1 SNL ${pct(G.e1snl.v)} · EPA 1 EP ${pct(G.e1ep.v)}
 🏆 Top 3: ${top3}
-⚠️ A revisar: ${alerta}`;
+👉 Se invita a todo el equipo a revisar sus indicadores en PROGESYS`;
   navigator.clipboard.writeText(texto)
     .then(()=>toast("Resumen copiado — pégalo en Teams"))
     .catch(()=>toast("No se pudo copiar el resumen. Copia manual: "+texto));
