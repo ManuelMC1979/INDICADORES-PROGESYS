@@ -1182,7 +1182,7 @@ function renderDash(el){
         .sort((a,b)=>b.score-a.score).slice(0,3);
       if(!rank.length) return `<div class="empty">Aún no hay datos de EPA del mes en curso para armar el ranking.</div>`;
       const medallas=["🥇","🥈","🥉"];
-      return `<div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th>EPA 1 SNL</th><th>EPA 2 EP</th><th>Promedio</th></tr></thead><tbody>
+      return `<div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th style="text-align:right">EPA 1 SNL</th><th style="text-align:right">EPA 2 EP</th><th style="text-align:right">Promedio</th></tr></thead><tbody>
         ${rank.map((x,i)=>`<tr><td style="font-size:18px">${medallas[i]}</td><td>${x.nombre}</td>
           <td class="num"><span class="pill ${light(x.e1snl,M.epa1)}">${pct(x.e1snl)}</span></td>
           <td class="num"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
@@ -1264,7 +1264,7 @@ function tablaEpaHistPorEjecutivo(){
   const celda=v=> v==null? `<span style="color:var(--ink-faint)">—</span>` : `<span class="pill ${light(v,metaProm)}">${pct(v)}</span>`;
   return `<div class="tblwrap" style="max-height:520px;overflow:auto"><table>
     <thead><tr><th>Ejecutivo</th>${meses.map(m=>`<th colspan="2" style="text-align:center">${mesLabel(m)}</th>`).join("")}</tr>
-    <tr><th></th>${meses.map(()=>`<th style="text-align:center">SNL</th><th style="text-align:center">EP</th>`).join("")}</tr></thead>
+    <tr><th></th>${meses.map(()=>`<th style="text-align:right">SNL</th><th style="text-align:right">EP</th>`).join("")}</tr></thead>
     <tbody>
     ${filas.map(f=>`<tr><td style="white-space:nowrap">${f.nombre}</td>
       ${meses.map(m=>{ const d=f.datos[m]; return `<td class="num">${celda(d&&d.snl)}</td><td class="num">${celda(d&&d.ep)}</td>`; }).join("")}
@@ -1394,7 +1394,7 @@ function renderDashEjec(el){
       </div>
     </div>
     <div class="panel"><h2>EPA histórico</h2>
-      ${hist.length? `<div class="tblwrap"><table><thead><tr><th>Mes</th><th>EPA 1 SNL</th><th>EPA 1 EP</th></tr></thead><tbody>
+      ${hist.length? `<div class="tblwrap"><table><thead><tr><th>Mes</th><th style="text-align:right">EPA 1 SNL</th><th style="text-align:right">EPA 1 EP</th></tr></thead><tbody>
         ${hist.map(h=>`<tr><td>${h.mes?String(h.mes).slice(0,7):"—"}</td>
           <td class="num"><span class="pill ${light(h.e1snl,M.epa1,1)}">${pct0(h.e1snl)}</span></td>
           <td class="num"><span class="pill ${light(h.e1ep,M.epa1,1)}">${pct0(h.e1ep)}</span></td></tr>`).join("")}
@@ -1404,7 +1404,7 @@ function renderDashEjec(el){
   <details class="panel ind-panel" ${EPA_DIARIO_PANEL_ABIERTO?"open":""} ontoggle="EPA_DIARIO_PANEL_ABIERTO=this.open">
     <summary>EPA diario <span class="ind-count">${epaDia.length} días</span><span class="ind-arrow">▸</span></summary>
     <div class="ind-body">
-      ${epaDia.length? `<div class="tblwrap" style="max-height:360px;overflow:auto"><table><thead><tr><th>Fecha</th><th>EPA 1 SNL</th><th>EPA 2 SNL</th><th>EPA 1 EP</th><th>EPA 2 EP</th></tr></thead><tbody>
+      ${epaDia.length? `<div class="tblwrap" style="max-height:360px;overflow:auto"><table><thead><tr><th>Fecha</th><th style="text-align:right">EPA 1 SNL</th><th style="text-align:right">EPA 2 SNL</th><th style="text-align:right">EPA 1 EP</th><th style="text-align:right">EPA 2 EP</th></tr></thead><tbody>
         ${epaDia.map(d=>`<tr><td>${d.fecha||"—"}</td>
           <td class="num"><span class="pill ${light(d.e1snl,M.epa1,1)}">${pct0(d.e1snl)}</span></td>
           <td class="num"><span class="pill ${light(d.e2snl,M.epa2,1)}">${pct0(d.e2snl)}</span></td>
