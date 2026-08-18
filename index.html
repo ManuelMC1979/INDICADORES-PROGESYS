@@ -981,11 +981,18 @@ function top3Ranking(execs){
 function resumenTeams(){
   const G=metricsGlobal(), execs=byExec();
   const rank=top3Ranking(execs);
-  const fecha=new Date().toLocaleDateString("es-CL",{day:"numeric",month:"short",year:"numeric"});
+  const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  const hoy=new Date();
+  const fecha=`${hoy.getDate()} ${MESES[hoy.getMonth()]} ${hoy.getFullYear()}`;
   const top3=rank.length? rank.map(x=>`${x.nombre} (SNL ${pct(x.e1snl)} · EP ${pct(x.e1ep)})`).join(", ") : "sin datos aún";
   const texto=`📊 PROGESYS — Indicadores · ${fecha}
-🟢 EPA 1 SNL ${pct(G.e1snl.v)} · EPA 1 EP ${pct(G.e1ep.v)}
+
 🏆 Top 3: ${top3}
+
+🟢 EPA 1 SNL ${pct(G.e1snl.v)} · EPA 2 SNL ${pct(G.e2snl.v)}
+
+🟢 EPA 1 EP ${pct(G.e1ep.v)} · EPA 2 EP ${pct(G.e2ep.v)}
+
 👉 Se invita a todo el equipo a revisar sus indicadores en PROGESYS`;
   navigator.clipboard.writeText(texto)
     .then(()=>toast("Resumen copiado — pégalo en Teams"))
