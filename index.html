@@ -1208,6 +1208,7 @@ function renderDash(el){
   const card=(key,name,g,extra="")=>{ if(IND[key]===false) return ""; const L=light(g.v,g.meta,g.dir,g.tol??0.03);
     return `<div class="card"><div class="k">${name}<span class="dot ${L}"></span></div><div class="v">${g.f(g.v)}</div><div class="m">${extra||("Meta "+(g.meta<=1&&g.dir===1?pct(g.meta):g.f?g.f(g.meta):g.meta))}</div></div>`; };
   const esCoordinador = SESION && SESION.rol==="coordinador";
+  const esSupervisor = SESION && SESION.rol==="supervisor";
   const fechasDia=fechasConDatos();
   const diaSel=diaActualDash();
   const enModoRango=MODO_DIA_DASH==="rango";
@@ -1222,7 +1223,7 @@ function renderDash(el){
         <div style="font-size:20px;font-weight:800;margin-top:4px">Dashboard — Vista Supervisor</div>
         <div style="font-size:12.5px;opacity:.75;margin-top:5px">Ejecutivos activos: ${activos} · Registros de asistencia: ${S.asistencia.length} · Auditorías de calidad: ${S.calidad.length}</div>
       </div>
-      ${esCoordinador? `<button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff" onclick="resumenTeams()">📋 Copiar resumen para Teams</button>` : ""}
+      ${(esCoordinador||esSupervisor)? `<button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff" onclick="resumenTeams()">📋 Copiar resumen para Teams</button>` : ""}
     </div>
   </div>
   ${esCoordinador? `
