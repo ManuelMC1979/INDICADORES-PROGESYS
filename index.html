@@ -1084,6 +1084,53 @@ async function guardarFichaEjecutivo(rutOriginal){
 }
 
 /* ════════════════════════ Dashboard general ════════════════════════ */
+/* Fechas (YYYY-MM-DD) con algún dato diario cargado (Asistencia o EPA diario), ordenadas ascendente */
+function fechasConDatos(){
+  const set=new Set([...S.asistencia.map(r=>r.fecha), ...S.epaDiario.map(r=>r.fecha)].filter(Boolean));
+  return [...set].sort();
+}
+/* Mismos indicadores que metricsGlobal(), pero calculados solo con los registros de un día —
+   únicamente para los indicadores cuya fuente (Asistencia, EPA diario) trae fecha por registro.
+   Contactabilidad/TMO/Calidad/Tipificaciones no tienen fecha por fila en sus hojas de origen
+   (KPI_Mensual, Calidad, Outbound), así que se quedan solo a nivel mensual en las tarjetas de abajo. */
+function metricsPorDia(fecha){
+  const M=S.config.metas;
+  const A=S.asistencia.filter(r=>r.fecha===fecha);
+  const E=S.epaDiario.filter(r=>r.fecha===fecha);
+  const atrasos=A.filter(r=>(r.atrasoMin??0)>0);
+  const ejecutivosDia=new Set(A.map(r=>normRut(r.rut)||norm(r.nombre)).filter(Boolean));
+  return {
+    fecha, nEjecutivos:ejecutivosDia.size,
+    adherencia:{v:avg(A.map(r=>r.adh)), meta:M.adherencia, dir:1, f:pct},
+    e1snl:{v:avg(E.map(r=>r.e1snl)), meta:M.epa1, dir:1, f:pct},
+    e1ep:{v:avg(E.map(r=>r.e1ep)), meta:M.epa1, dir:1, f:pct},
+    e2snl:{v:avg(E.map(r=>r.e2snl)), meta:M.epa2, dir:1, f:pct},
+    e2ep:{v:avg(E.map(r=>r.e2ep)), meta:M.epa2, dir:1, f:pct},
+    banoMin:{v:avg(A.map(r=>r.banoMin)), meta:M.banoMin, dir:-1, f:v=>fx(v)},
+    banoVec:{v:avg(A.map(r=>r.banoVec)), meta:M.banoVeces, dir:-1, f:v=>fx(v)},
+    descMin:{v:avg(A.map(r=>(r.d1??0)+(r.d2??0))), meta:M.descansosMin, dir:-1, f:v=>fx(v)},
+    colMin:{v:avg(A.map(r=>r.colMin)), meta:M.colacionMin, dir:-1, f:v=>fx(v)},
+    atrasosN:{v:atrasos.length, meta:0, dir:-1, f:v=>fx(v,0), tol:0},
+    atrasosMin:{v:sum(A.map(r=>r.atrasoMin)), meta:0, dir:-1, f:v=>fx(v,0), tol:0}
+  };
+}
+function fechaLarga(fecha){
+  if(!fecha) return "—";
+  const d=new Date(fecha+"T00:00:00");
+  if(isNaN(d)) return fecha;
+  const s=d.toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+let DIA_SEL=null; /* fecha elegida; null = usar la más reciente con datos */
+function diaActualDash(){ const fechas=fechasConDatos(); return DIA_SEL && fechas.includes(DIA_SEL)? DIA_SEL : fechas[fechas.length-1]; }
+function irADia(delta){
+  const fechas=fechasConDatos(); if(!fechas.length) return;
+  let idx=fechas.indexOf(diaActualDash());
+  idx=Math.min(fechas.length-1, Math.max(0, idx+delta));
+  DIA_SEL=fechas[idx]; render("dashboard");
+}
+function irAHoyDash(){ DIA_SEL=null; render("dashboard"); }
+function cambiarDiaDash(v){ DIA_SEL=v||null; render("dashboard"); }
 function renderDash(el){
   const G=metricsGlobal(), execs=byExec(), M=S.config.metas;
   const IND=S.config.indicadores||{};
@@ -1091,11 +1138,52 @@ function renderDash(el){
   const card=(key,name,g,extra="")=>{ if(IND[key]===false) return ""; const L=light(g.v,g.meta,g.dir,g.tol??0.03);
     return `<div class="card"><div class="k">${name}<span class="dot ${L}"></span></div><div class="v">${g.f(g.v)}</div><div class="m">${extra||("Meta "+(g.meta<=1&&g.dir===1?pct(g.meta):g.f?g.f(g.meta):g.meta))}</div></div>`; };
   const esCoordinador = SESION && SESION.rol==="coordinador";
+  const fechasDia=fechasConDatos();
+  const diaSel=diaActualDash();
+  const G2=diaSel? metricsPorDia(diaSel) : null;
+  const ultimasFechas=fechasDia.slice(-10);
   el.innerHTML=`
   <div class="panel" style="background:linear-gradient(120deg,var(--navy) 0%,var(--navy-3) 70%,var(--teal) 160%);color:#fff">
     <div style="font-size:11px;letter-spacing:.2em;color:var(--teal-2);font-weight:700">PROGESYS · CALL CENTER</div>
     <div style="font-size:20px;font-weight:800;margin-top:4px">Dashboard — Vista Supervisor</div>
     <div style="font-size:12.5px;opacity:.75;margin-top:5px">Ejecutivos activos: ${activos} · Registros de asistencia: ${S.asistencia.length} · Auditorías de calidad: ${S.calidad.length}</div>
+  </div>
+  <div class="panel">
+    <h2>Indicadores por día</h2>
+    ${!fechasDia.length? `<div class="empty">Aún no hay Asistencia ni EPA diario cargados para poder ver indicadores por día.</div>` : `
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="btn btn-ghost btn-sm" onclick="irADia(-1)" ${fechasDia.indexOf(diaSel)<=0?"disabled":""}>‹</button>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--ink-strong)">${fechaLarga(diaSel)}</div>
+        <div style="font-size:12px;color:var(--ink-faint);margin-top:1px">${G2.nEjecutivos} de ${activos} ejecutivos con registro este día</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="irADia(1)" ${fechasDia.indexOf(diaSel)>=fechasDia.length-1?"disabled":""}>›</button>
+      <input type="date" value="${diaSel}" min="${fechasDia[0]}" max="${fechasDia[fechasDia.length-1]}" style="font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit" onchange="cambiarDiaDash(this.value)">
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:var(--teal);background:var(--teal-soft);border:1px solid #BFE8E4" onclick="irAHoyDash()">Hoy</button>
+    </div>
+    <div class="cards">
+      ${card("adherencia","Adherencia",G2.adherencia)}
+      ${card("atrasosN","Atrasos",G2.atrasosN,fx(G2.atrasosMin.v,0)+" min acumulados")}
+      ${card("banoMin","Baño (min prom)",G2.banoMin)}
+      ${card("banoVec","Baño (veces prom)",G2.banoVec)}
+      ${card("descMin","Descansos (min prom)",G2.descMin)}
+      ${card("colMin","Colación (min prom)",G2.colMin)}
+      ${card("e1snl","EPA 1 SNL",G2.e1snl)} ${card("e2snl","EPA 2 SNL",G2.e2snl)}
+      ${card("e1ep","EPA 1 EP",G2.e1ep)} ${card("e2ep","EPA 2 EP",G2.e2ep)}
+    </div>
+    <div style="font-size:12px;color:var(--ink-faint);background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:10px 14px;margin-top:4px">
+      Contactabilidad, TMO, Calidad y Tipificaciones se muestran más abajo solo a nivel mensual: las hojas de origen (KPI_Mensual, Calidad, Outbound) no traen una fecha por registro.
+    </div>
+    ${ultimasFechas.length? `<div class="tblwrap" style="margin-top:16px"><table>
+      <thead><tr><th>Fecha</th><th>Adherencia</th><th>Atrasos</th><th>EPA 1 SNL</th><th>EPA 1 EP</th></tr></thead>
+      <tbody>${ultimasFechas.slice().reverse().map(f=>{ const d=metricsPorDia(f);
+        return `<tr${f===diaSel?' style="background:var(--teal-soft)"':''}><td>${new Date(f+"T00:00:00").toLocaleDateString("es-CL",{weekday:"short",day:"numeric",month:"short"})}</td>
+          <td class="num"><span class="pill ${light(d.adherencia.v,d.adherencia.meta,1)}">${pct(d.adherencia.v)}</span></td>
+          <td class="num">${d.atrasosN.v}</td>
+          <td class="num"><span class="pill ${light(d.e1snl.v,d.e1snl.meta,1)}">${pct(d.e1snl.v)}</span></td>
+          <td class="num"><span class="pill ${light(d.e1ep.v,d.e1ep.meta,1)}">${pct(d.e1ep.v)}</span></td></tr>`; }).join("")}
+      </tbody></table></div>` : ""}
+    `}
   </div>
   ${esCoordinador? `
   <details class="panel ind-panel" ${INDICADORES_PANEL_ABIERTO?"open":""} ontoggle="INDICADORES_PANEL_ABIERTO=this.open">
