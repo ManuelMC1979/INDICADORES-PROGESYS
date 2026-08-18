@@ -994,7 +994,7 @@ function renderTable(el,m){
     </div>
     <div id="form-${m.id}"></div>
     <div class="tblwrap" style="max-height:560px;overflow:auto">
-    ${rows.length? `<table><thead><tr>${m.cols.map(c=>`<th>${c.n}</th>`).join("")}<th></th></tr></thead><tbody>
+    ${rows.length? `<table><thead><tr>${m.cols.map(c=>`<th${c.t==="pct"||c.t==="n"?' style="text-align:right"':""}>${c.n}</th>`).join("")}<th></th></tr></thead><tbody>
       ${rows.map((r,i)=>`<tr>${m.cols.map(c=>cellHTML(r,c,m)).join("")}
         <td><button class="btn btn-ghost btn-sm" onclick="openForm('${m.id}',${data.indexOf(r)})">✎</button>
             <button class="btn btn-danger btn-sm" onclick="delRow('${m.id}',${data.indexOf(r)})">🗑</button></td></tr>`).join("")}
