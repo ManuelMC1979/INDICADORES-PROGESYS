@@ -324,6 +324,7 @@ async function iniciarAppLogueada(){
   buildNav();
   show(SESION.rol==="ejecutivo" ? "dashEjec" : "dashboard");
   const ok=await loadFromCloud(false);
+  if(!SESION) return; /* sesión cerrada mientras se cargaban los datos (ej. token vencido) */
   if(!ok) setCloudStatus("Sin conexión, usando datos locales",false);
   if(SESION.rol!=="ejecutivo"){ cargarHistorial(); cargarIngresosEquipo(); }
 }
