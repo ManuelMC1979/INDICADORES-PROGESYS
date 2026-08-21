@@ -1470,37 +1470,25 @@ function renderDash(el){
     ${card("descMin","Descansos (min prom)",{...G.descMin,f:v=>fx(v,0)},"Desc 1 + Desc 2 · Límite "+M.descansosMin+" min")} ${card("colMin","Colación (min prom)",{...G.colMin,f:v=>fx(v,0)},"Límite "+M.colacionMin+" min")}
     ${card("atrasosN","Atrasos (cantidad)",G.atrasosN,"registros con atraso")} ${card("atrasosMin","Atrasos (min total)",G.atrasosMin,"minutos acumulados")}
   </div>
-  <div class="panel"><h2>Ranking KPI · Mes en curso — Top 3 ejecutivos</h2>
+  <div class="panel"><h2>Ranking Top 3 · EPA 1 y EPA 2</h2>
     ${(() => {
-      const rank = top3Ranking(execs);
-      if(!rank.length) return `<div class="empty">Aún no hay datos de EPA del mes en curso para armar el ranking.</div>`;
       const medallas=["🥇","🥈","🥉"];
-      return `<div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th style="text-align:right">EPA 1 SNL</th><th style="text-align:right">EPA 2 EP</th><th style="text-align:right">Promedio</th></tr></thead><tbody>
-        ${rank.map((x,i)=>`<tr><td style="font-size:18px">${medallas[i]}</td><td>${x.nombre}</td>
-          <td class="num"><span class="pill ${light(x.e1snl,M.epa1)}">${pct(x.e1snl)}</span></td>
-          <td class="num"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
-          <td class="num" style="font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
-      </tbody></table></div>`;
-    })()}
-  </div>
-  <div class="panel"><h2>Ranking por servicio · EPA SNL y EPA EP</h2>
-    ${(() => {
       const tabla=(rank,titulo)=>{
-        if(!rank.length) return `<div class="empty">Sin datos aún.</div>`;
+        if(!rank.length) return `<div><div style="font-size:12.5px;font-weight:700;color:var(--ink-strong);margin-bottom:6px">${titulo}</div><div class="empty">Sin datos aún.</div></div>`;
         return `<div>
           <div style="font-size:12.5px;font-weight:700;color:var(--ink-strong);margin-bottom:6px">${titulo}</div>
           <div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th style="text-align:right">Promedio</th></tr></thead><tbody>
-          ${rank.map((x,i)=>`<tr><td style="color:var(--ink-faint)">${i+1}</td><td>${x.nombre}</td>
-            <td class="num"><span class="pill ${light(x.score,M.epa1)}">${pct(x.score)}</span></td></tr>`).join("")}
+          ${rank.map((x,i)=>`<tr><td style="font-size:18px">${medallas[i]}</td><td>${x.nombre}</td>
+            <td class="num" style="font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
           </tbody></table></div>
         </div>`;
       };
-      const rankSnl=rankingPorServicio(execs,["e1snl","e2snl"]);
-      const rankEp=rankingPorServicio(execs,["e1ep","e2ep"]);
-      if(!rankSnl.length && !rankEp.length) return `<div class="empty">Aún no hay datos de EPA del mes en curso para armar el ranking.</div>`;
+      const rankEpa1=rankingPorServicio(execs,["e1snl","e1ep"]).slice(0,3);
+      const rankEpa2=rankingPorServicio(execs,["e2snl","e2ep"]).slice(0,3);
+      if(!rankEpa1.length && !rankEpa2.length) return `<div class="empty">Aún no hay datos de EPA del mes en curso para armar el ranking.</div>`;
       return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
-        ${tabla(rankSnl,"EPA SNL (EPA 1 SNL + EPA 2 SNL)")}
-        ${tabla(rankEp,"EPA EP (EPA 1 EP + EPA 2 EP)")}
+        ${tabla(rankEpa1,"EPA 1 (EPA 1 SNL + EPA 1 EP)")}
+        ${tabla(rankEpa2,"EPA 2 (EPA 2 SNL + EPA 2 EP)")}
       </div>`;
     })()}
   </div>
