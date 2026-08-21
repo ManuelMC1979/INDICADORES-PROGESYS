@@ -183,6 +183,7 @@ ol.instr b{color:var(--teal)}
     <a class="btn btn-ghost btn-sm" href="https://manuelmc1979.github.io/suite-callcenter/" style="text-decoration:none">🏠 Portal</a>
     <button class="btn btn-ghost btn-sm" id="themeBtn" onclick="toggleTema()">🌙 Modo oscuro</button>
     <label class="btn btn-teal filebtn" id="importWrap"><span id="importLabel">⬆ Importar Excel matriz</span><input type="file" id="fileInput" accept=".xlsx,.xls"></label>
+    <label class="btn btn-navy filebtn" id="importCrudoWrap"><span>📥 Importar reporte crudo</span><input type="file" id="fileInputCrudo" accept=".xlsx,.xls"></label>
     <button class="btn btn-ghost btn-sm" onclick="hacerLogout()">Cerrar sesión</button>
   </header>
   <div id="pages"></div>
@@ -320,6 +321,8 @@ async function iniciarAppLogueada(){
   badge.innerHTML=`<b>${SESION.nombre||SESION.usuario}</b> · ${etiquetaRol} · Ingreso N° ${SESION.veces_ingreso||1}`;
   const importWrap=document.getElementById("importWrap");
   importWrap.style.display = SESION.rol==="ejecutivo" ? "none" : "";
+  const importCrudoWrap=document.getElementById("importCrudoWrap");
+  importCrudoWrap.style.display = SESION.rol==="ejecutivo" ? "none" : "";
   updateSyncDisplay();
   buildNav();
   show(SESION.rol==="ejecutivo" ? "dashEjec" : "dashboard");
@@ -650,6 +653,13 @@ document.getElementById("fileInput").addEventListener("change",e=>{
                  catch(err){ toast("Error al leer el archivo: "+err.message); } e.target.value=""; };
   r.readAsArrayBuffer(f);
 });
+document.getElementById("fileInputCrudo").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{ try{ procesarReporteCrudo(XLSX.read(new Uint8Array(ev.target.result),{type:"array",cellDates:false})); }
+                 catch(err){ toast("Error al leer el archivo: "+err.message); } e.target.value=""; };
+  r.readAsArrayBuffer(f);
+});
 async function importWB(wb, nombreArchivo){
   let log=[];
   wb.SheetNames.forEach(name=>{
@@ -749,6 +759,194 @@ function mergeEpaDiario(nuevos){
   const nuevasClaves=new Set(nuevos.map(key));
   const conservados=S.epaDiario.filter(o=>!nuevasClaves.has(key(o)));
   S.epaDiario=conservados.concat(nuevos);
+}
+
+/* ════════════════════════ importación de reportes crudos del CRM (no-matriz) ════════════════════════
+   Estos son los exports en bruto que trae Coordinador/Supervisor directo del sistema de llamadas
+   (pestaña "Export", una fila por ejecutivo, columnas por fecha + Total). Vienen en 2 formatos:
+   1) EPA SNL/EP: fila de métrica "%SATISFACCION" o "%RESOLUCION" + fila de filtros con "SERVICIO es
+      EP/SNL" → define el campo destino (SATISFACCION=e1*, RESOLUCION=e2*). Actualiza acumulado
+      (progesys_epa) y diario (progesys_epa_diario), fila por fila, sin pisar los otros 3 indicadores
+      EPA de esa misma fila.
+   2) Transferencia a EPA: cabecera con pares "%Transf EPA"/"Q Llamada" por fecha. Solo se usa el
+      Total — es el que se ve en el dashboard del Coordinador.
+   El nombre del "Agente"/"último agente" viene en formato "Apellido Apellido Nombre Nombre" (al
+   revés que Ejecutivos, que guarda "Nombre Apellido"), así que el cruce es por subconjunto de
+   palabras normalizadas, no por texto exacto. */
+function tokensNombreCrudo(s){
+  return String(s||"").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[^A-Z\s]/g," ").split(/\s+/).filter(Boolean);
+}
+function cruzarEjecutivoPorNombre(nombreCrudo){
+  const tokensCrudo=new Set(tokensNombreCrudo(nombreCrudo));
+  return S.ejecutivos.filter(e=>e.nombre && tokensNombreCrudo(e.nombre).every(t=>tokensCrudo.has(t)));
+}
+const NOMBRE_CAMPO_EPA={e1snl:"EPA 1 SNL",e1ep:"EPA 1 EP",e2snl:"EPA 2 SNL",e2ep:"EPA 2 EP"};
+
+function detectarFormatoCrudo(rows){
+  const header0=rows[0]||[], header1=rows[1]||[];
+  const filtrosRow=rows.find(r=>typeof r[0]==="string" && r[0].startsWith("Filtros aplicados"));
+  const filtrosTxt=filtrosRow? filtrosRow[0] : "";
+
+  if(header1.includes("%Transf EPA")){
+    let idxTotal=-1;
+    for(let i=header1.length-1;i>=0;i--){ if(header1[i]==="%Transf EPA"){ idxTotal=i; break; } }
+    if(idxTotal<0) return null;
+    return {tipo:"transferencia", idxTotal};
+  }
+
+  const metrica=header1[1];
+  if(metrica==="%SATISFACCION"||metrica==="%RESOLUCION"){
+    const servicio=/SERVICIO es EP/.test(filtrosTxt) ? "EP" : /SERVICIO es SNL/.test(filtrosTxt) ? "SNL" : null;
+    if(!servicio) return null;
+    const campo=(metrica==="%SATISFACCION"?"e1":"e2")+servicio.toLowerCase();
+    const fechas=header0.slice(1,-1).map(v=>excelDate(v));
+    return {tipo:"epa", campo, fechas};
+  }
+  return null;
+}
+
+function parseReporteEpa(rows, fmt){
+  const resultado=[];
+  for(const row of rows.slice(2)){
+    const nombreCrudo=row[0];
+    if(!nombreCrudo || typeof nombreCrudo!=="string" || nombreCrudo==="Total" || nombreCrudo.startsWith("Filtros")) continue;
+    const total=row[row.length-1];
+    const diarios=fmt.fechas.map((f,i)=>({fecha:f, valor:row[1+i]}));
+    resultado.push({nombreCrudo, candidatos:cruzarEjecutivoPorNombre(nombreCrudo), total, diarios});
+  }
+  return resultado;
+}
+function parseReporteTransferencia(rows, fmt){
+  const resultado=[];
+  for(const row of rows.slice(2)){
+    const nombreCrudo=row[0];
+    if(!nombreCrudo || typeof nombreCrudo!=="string" || nombreCrudo.startsWith("Filtros")) continue;
+    resultado.push({nombreCrudo, candidatos:cruzarEjecutivoPorNombre(nombreCrudo), total:row[fmt.idxTotal]});
+  }
+  return resultado;
+}
+
+async function procesarReporteCrudo(wb){
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+  if(!rows.length){ toast("Archivo vacío."); return; }
+  const fmt=detectarFormatoCrudo(rows);
+  if(!fmt){ toast("No se reconoció el formato de este archivo."); return; }
+  if(fmt.tipo==="transferencia") abrirModalTransferencia(parseReporteTransferencia(rows,fmt));
+  else await abrirModalEpa(parseReporteEpa(rows,fmt), fmt);
+}
+
+function cerrarModalCrudo(){ document.getElementById("modalCrudo")?.remove(); }
+function filaSinCruceHtml(sinCruce){
+  return sinCruce.length? `<p style="color:var(--bad);font-size:12px;margin-top:8px">Sin cruce (${sinCruce.length}): ${sinCruce.map(r=>r.nombreCrudo).join(", ")}</p>` : "";
+}
+
+function abrirModalTransferencia(resultado){
+  const matched=resultado.filter(r=>r.candidatos.length===1);
+  const sinCruce=resultado.filter(r=>r.candidatos.length!==1);
+  const filas=matched.map(r=>`<tr><td>${r.candidatos[0].nombre}</td><td style="text-align:right">${pct(r.total)}</td></tr>`).join("");
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="modalCrudo" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--white);border-radius:12px;max-width:520px;width:100%;max-height:85vh;overflow:auto;padding:20px">
+        <h2 style="margin:0 0 4px;font-size:15px;color:var(--ink-strong)">Importar Transferencia a EPA</h2>
+        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 12px">Se actualiza solo el acumulado (Total) de cada ejecutivo. ${matched.length}/${resultado.length} cruzados.</p>
+        <table style="width:100%;font-size:13px"><thead><tr><th style="text-align:left">Ejecutivo</th><th style="text-align:right">Total</th></tr></thead>
+        <tbody>${filas}</tbody></table>
+        ${filaSinCruceHtml(sinCruce)}
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+          <button class="btn btn-ghost btn-sm" onclick="cerrarModalCrudo()">Cancelar</button>
+          <button class="btn btn-teal btn-sm" id="btnConfirmarTransferencia">Confirmar e importar</button>
+        </div>
+      </div>
+    </div>`);
+  document.getElementById("btnConfirmarTransferencia").onclick=()=>ejecutarImportTransferencia(matched);
+}
+async function ejecutarImportTransferencia(matched){
+  document.querySelectorAll("#modalCrudo button").forEach(b=>b.disabled=true);
+  let ok=0;
+  for(const r of matched){
+    if(r.total===null||r.total===undefined) continue;
+    const {error}=await SB.from("progesys_epa").update({transferencia:r.total}).eq("rut", r.candidatos[0].rut);
+    if(!error) ok++;
+  }
+  cerrarModalCrudo();
+  toast(`Transferencia a EPA actualizada: ${ok}/${matched.length} ejecutivos.`);
+  await loadFromCloud(false); render(CUR);
+}
+
+async function abrirModalEpa(resultado, fmt){
+  const matched=resultado.filter(r=>r.candidatos.length===1).map(r=>({...r, e:r.candidatos[0]}));
+  const sinCruce=resultado.filter(r=>r.candidatos.length!==1);
+
+  const {data:existentes,error}=await SB.from("progesys_epa_diario").select(`rut,fecha,${fmt.campo}`).in("fecha", fmt.fechas);
+  if(error){ toast("Error al comparar con la base de datos: "+error.message); return; }
+  const mapaExistente=new Map();
+  (existentes||[]).forEach(x=>mapaExistente.set(normRut(x.rut)+"|"+x.fecha, x[fmt.campo]));
+
+  const nuevas=[], huecos=[], conflictos=[];
+  for(const r of matched){
+    for(const {fecha,valor} of r.diarios){
+      if(valor===null||valor===undefined) continue;
+      const key=normRut(r.e.rut)+"|"+fecha;
+      if(!mapaExistente.has(key)){ nuevas.push({rut:r.e.rut, nombre:r.e.nombre, fecha, valor}); continue; }
+      const actual=mapaExistente.get(key);
+      if(actual===null||actual===undefined) huecos.push({rut:r.e.rut, nombre:r.e.nombre, fecha, valor});
+      else if(Math.abs(actual-valor)>0.005) conflictos.push({rut:r.e.rut, nombre:r.e.nombre, fecha, valorArchivo:valor, valorDB:actual});
+    }
+  }
+
+  const filasConflicto=conflictos.map(c=>`<tr><td>${c.nombre}</td><td>${c.fecha}</td><td style="text-align:right">${pct(c.valorArchivo)}</td><td style="text-align:right;color:var(--ink-faint)">${pct(c.valorDB)}</td></tr>`).join("");
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="modalCrudo" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--white);border-radius:12px;max-width:640px;width:100%;max-height:85vh;overflow:auto;padding:20px">
+        <h2 style="margin:0 0 4px;font-size:15px;color:var(--ink-strong)">Importar ${NOMBRE_CAMPO_EPA[fmt.campo]}</h2>
+        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 12px">${matched.length}/${resultado.length} ejecutivos cruzados · ${nuevas.length} valores nuevos · ${huecos.length} huecos a completar · ${conflictos.length} en conflicto con lo ya cargado.</p>
+        ${filaSinCruceHtml(sinCruce)}
+        ${conflictos.length? `
+          <div style="margin-top:10px">
+            <p style="font-size:12.5px;font-weight:600;color:var(--ink-strong)">Valores en conflicto (archivo vs. sistema actual):</p>
+            <table style="width:100%;font-size:12.5px"><thead><tr><th style="text-align:left">Ejecutivo</th><th style="text-align:left">Fecha</th><th style="text-align:right">Archivo</th><th style="text-align:right">Sistema</th></tr></thead>
+            <tbody>${filasConflicto}</tbody></table>
+          </div>` : ""}
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="cerrarModalCrudo()">Cancelar</button>
+          ${conflictos.length? `<button class="btn btn-navy btn-sm" id="btnSoloNuevos">Importar solo nuevos/huecos (dejar conflictos)</button>` : ""}
+          <button class="btn btn-teal btn-sm" id="btnConTodo">${conflictos.length? "Importar todo, incl. conflictos" : "Confirmar e importar"}</button>
+        </div>
+      </div>
+    </div>`);
+  document.getElementById("btnConTodo").onclick=()=>ejecutarImportEpa(fmt, matched, nuevas, huecos, conflictos, true);
+  const btnSolo=document.getElementById("btnSoloNuevos");
+  if(btnSolo) btnSolo.onclick=()=>ejecutarImportEpa(fmt, matched, nuevas, huecos, [], false);
+}
+
+async function ejecutarImportEpa(fmt, matched, nuevas, huecos, conflictos, incluirConflictos){
+  document.querySelectorAll("#modalCrudo button").forEach(b=>b.disabled=true);
+
+  for(const r of matched){
+    if(r.total===null||r.total===undefined) continue;
+    await SB.from("progesys_epa").update({[fmt.campo]:r.total}).eq("rut", r.e.rut);
+  }
+
+  if(nuevas.length){
+    const payload=nuevas.map(n=>({rut:n.rut, nombre:n.nombre, fecha:n.fecha, [fmt.campo]:n.valor}));
+    await SB.from("progesys_epa_diario").insert(payload);
+  }
+  for(const h of huecos){
+    await SB.from("progesys_epa_diario").update({[fmt.campo]:h.valor}).eq("rut", h.rut).eq("fecha", h.fecha);
+  }
+  if(incluirConflictos){
+    for(const c of conflictos){
+      await SB.from("progesys_epa_diario").update({[fmt.campo]:c.valorArchivo}).eq("rut", c.rut).eq("fecha", c.fecha);
+    }
+  }
+
+  cerrarModalCrudo();
+  toast(`Importado: acumulado (${matched.length}) · ${nuevas.length} nuevos · ${huecos.length} huecos${incluirConflictos && conflictos.length? " · "+conflictos.length+" conflictos sobrescritos" : ""}.`);
+  await loadFromCloud(false); render(CUR);
 }
 /* Recalcula los campos derivados de Asistencia (los que en el Excel modelo son fórmulas:
    Nombre por Rut, Turno del día, Minutos de atraso, Minutos de colación, Tiempo total descanso,
