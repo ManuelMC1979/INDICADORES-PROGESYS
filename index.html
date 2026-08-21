@@ -1175,6 +1175,13 @@ function top3Ranking(execs){
     .filter(x=>x.score!=null)
     .sort((a,b)=>b.score-a.score).slice(0,3);
 }
+/* Ranking completo por tipo de servicio: EPA SNL = promedio de EPA 1 SNL + EPA 2 SNL,
+   EPA EP = promedio de EPA 1 EP + EPA 2 EP (los dos indicadores de cada servicio). */
+function rankingPorServicio(execs, campos){
+  return execs.map(x=>({...x, score: avg(campos.map(c=>x[c]))}))
+    .filter(x=>x.score!=null)
+    .sort((a,b)=>b.score-a.score);
+}
 /* Arma un resumen breve (EPA 1 SNL/EP global y por Top 3) y lo copia al portapapeles para
    pegarlo en Teams. Reutiliza metricsGlobal()/top3Ranking() para que coincida siempre con lo
    que se ve en las tarjetas del Dashboard — nunca inventa un número distinto al de pantalla. */
@@ -1358,10 +1365,10 @@ function metricsPorDia(fecha){
     e1ep:{v:avg(E.map(r=>r.e1ep)), meta:M.epa1, dir:1, f:pct},
     e2snl:{v:avg(E.map(r=>r.e2snl)), meta:M.epa2, dir:1, f:pct},
     e2ep:{v:avg(E.map(r=>r.e2ep)), meta:M.epa2, dir:1, f:pct},
-    banoMin:{v:avg(A.map(r=>r.banoMin)), meta:M.banoMin, dir:-1, f:v=>fx(v)},
-    banoVec:{v:avg(A.map(r=>r.banoVec)), meta:M.banoVeces, dir:-1, f:v=>fx(v)},
-    descMin:{v:avg(A.map(r=>(r.d1??0)+(r.d2??0))), meta:M.descansosMin, dir:-1, f:v=>fx(v)},
-    colMin:{v:avg(A.map(r=>r.colMin)), meta:M.colacionMin, dir:-1, f:v=>fx(v)},
+    banoMin:{v:avg(A.map(r=>r.banoMin)), meta:M.banoMin, dir:-1, f:v=>fx(v,0)},
+    banoVec:{v:avg(A.map(r=>r.banoVec)), meta:M.banoVeces, dir:-1, f:v=>fx(v,0)},
+    descMin:{v:avg(A.map(r=>(r.d1??0)+(r.d2??0))), meta:M.descansosMin, dir:-1, f:v=>fx(v,0)},
+    colMin:{v:avg(A.map(r=>r.colMin)), meta:M.colacionMin, dir:-1, f:v=>fx(v,0)},
     atrasosN:{v:atrasos.length, meta:0, dir:-1, f:v=>fx(v,0), tol:0},
     atrasosMin:{v:sum(A.map(r=>r.atrasoMin)), meta:0, dir:-1, f:v=>fx(v,0), tol:0}
   };
@@ -1383,10 +1390,10 @@ function metricsPorRango(desde,hasta){
     e1ep:{v:avg(E.map(r=>r.e1ep)), meta:M.epa1, dir:1, f:pct},
     e2snl:{v:avg(E.map(r=>r.e2snl)), meta:M.epa2, dir:1, f:pct},
     e2ep:{v:avg(E.map(r=>r.e2ep)), meta:M.epa2, dir:1, f:pct},
-    banoMin:{v:avg(A.map(r=>r.banoMin)), meta:M.banoMin, dir:-1, f:v=>fx(v)},
-    banoVec:{v:avg(A.map(r=>r.banoVec)), meta:M.banoVeces, dir:-1, f:v=>fx(v)},
-    descMin:{v:avg(A.map(r=>(r.d1??0)+(r.d2??0))), meta:M.descansosMin, dir:-1, f:v=>fx(v)},
-    colMin:{v:avg(A.map(r=>r.colMin)), meta:M.colacionMin, dir:-1, f:v=>fx(v)},
+    banoMin:{v:avg(A.map(r=>r.banoMin)), meta:M.banoMin, dir:-1, f:v=>fx(v,0)},
+    banoVec:{v:avg(A.map(r=>r.banoVec)), meta:M.banoVeces, dir:-1, f:v=>fx(v,0)},
+    descMin:{v:avg(A.map(r=>(r.d1??0)+(r.d2??0))), meta:M.descansosMin, dir:-1, f:v=>fx(v,0)},
+    colMin:{v:avg(A.map(r=>r.colMin)), meta:M.colacionMin, dir:-1, f:v=>fx(v,0)},
     atrasosN:{v:atrasos.length, meta:0, dir:-1, f:v=>fx(v,0), tol:0},
     atrasosMin:{v:sum(A.map(r=>r.atrasoMin)), meta:0, dir:-1, f:v=>fx(v,0), tol:0}
   };
@@ -1474,6 +1481,27 @@ function renderDash(el){
           <td class="num"><span class="pill ${light(x.e2ep,M.epa2)}">${pct(x.e2ep)}</span></td>
           <td class="num" style="font-weight:800;color:var(--ink-strong)">${pct(x.score)}</td></tr>`).join("")}
       </tbody></table></div>`;
+    })()}
+  </div>
+  <div class="panel"><h2>Ranking por servicio · EPA SNL y EPA EP</h2>
+    ${(() => {
+      const tabla=(rank,titulo)=>{
+        if(!rank.length) return `<div class="empty">Sin datos aún.</div>`;
+        return `<div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--ink-strong);margin-bottom:6px">${titulo}</div>
+          <div class="tblwrap"><table><thead><tr><th></th><th>Ejecutivo</th><th style="text-align:right">Promedio</th></tr></thead><tbody>
+          ${rank.map((x,i)=>`<tr><td style="color:var(--ink-faint)">${i+1}</td><td>${x.nombre}</td>
+            <td class="num"><span class="pill ${light(x.score,M.epa1)}">${pct(x.score)}</span></td></tr>`).join("")}
+          </tbody></table></div>
+        </div>`;
+      };
+      const rankSnl=rankingPorServicio(execs,["e1snl","e2snl"]);
+      const rankEp=rankingPorServicio(execs,["e1ep","e2ep"]);
+      if(!rankSnl.length && !rankEp.length) return `<div class="empty">Aún no hay datos de EPA del mes en curso para armar el ranking.</div>`;
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
+        ${tabla(rankSnl,"EPA SNL (EPA 1 SNL + EPA 2 SNL)")}
+        ${tabla(rankEp,"EPA EP (EPA 1 EP + EPA 2 EP)")}
+      </div>`;
     })()}
   </div>
   <div class="panel">
