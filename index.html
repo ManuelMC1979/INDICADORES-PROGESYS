@@ -1470,7 +1470,7 @@ function renderDash(el){
     ${card("descMin","Descansos (min prom)",{...G.descMin,f:v=>fx(v,0)},"Desc 1 + Desc 2 · Límite "+M.descansosMin+" min")} ${card("colMin","Colación (min prom)",{...G.colMin,f:v=>fx(v,0)},"Límite "+M.colacionMin+" min")}
     ${card("atrasosN","Atrasos (cantidad)",G.atrasosN,"registros con atraso")} ${card("atrasosMin","Atrasos (min total)",G.atrasosMin,"minutos acumulados")}
   </div>
-  <div class="panel"><h2>Ranking Top 3 · EPA 1 y EPA 2</h2>
+  <div class="panel"><h2>Ranking Top 3 · EPA 1</h2>
     ${(() => {
       const medallas=["🥇","🥈","🥉"];
       const tabla=(rank,titulo)=>{
@@ -1483,12 +1483,16 @@ function renderDash(el){
           </tbody></table></div>
         </div>`;
       };
-      const rankEpa1=rankingPorServicio(execs,["e1snl","e1ep"]).slice(0,3);
-      const rankEpa2=rankingPorServicio(execs,["e2snl","e2ep"]).slice(0,3);
-      if(!rankEpa1.length && !rankEpa2.length) return `<div class="empty">Aún no hay datos de EPA del mes en curso para armar el ranking.</div>`;
-      return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
-        ${tabla(rankEpa1,"EPA 1 (EPA 1 SNL + EPA 1 EP)")}
-        ${tabla(rankEpa2,"EPA 2 (EPA 2 SNL + EPA 2 EP)")}
+      const rankEpa1Snl=rankingPorServicio(execs,["e1snl"]).slice(0,3);
+      const rankEpa1Ep=rankingPorServicio(execs,["e1ep"]).slice(0,3);
+      if(!rankEpa1Snl.length && !rankEpa1Ep.length) return `<div class="empty">Aún no hay datos de EPA 1 del mes en curso para armar el ranking.</div>`;
+      const recuadro=(titulo,contenido)=>`<div style="border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--bg)">
+        <div style="font-size:13px;font-weight:800;color:var(--ink-strong);margin-bottom:12px">${titulo}</div>
+        ${contenido}
+      </div>`;
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px">
+        ${recuadro("EPA 1 SNL",tabla(rankEpa1Snl,"Mejores ejecutivos"))}
+        ${recuadro("EPA 1 EP",tabla(rankEpa1Ep,"Mejores ejecutivos"))}
       </div>`;
     })()}
   </div>
