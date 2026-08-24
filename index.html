@@ -400,7 +400,7 @@ async function pullTurnos(){
    puede deducir esto del mensaje de error de Postgres (lo oculta si el rol no tiene permiso de
    lectura irrestricta sobre la fila en conflicto, como pasa con las políticas por rol de EPA
    diario), así que se declara explícitamente para las tablas conocidas. */
-const UPSERT_KEY={ejecutivos:["rut"], epaDiario:["rut","fecha"]};
+const UPSERT_KEY={ejecutivos:["rut"], asistencia:["rut","fecha"], epaDiario:["rut","fecha"]};
 /* Sube una sola tabla a la nube (reemplaza todo su contenido por el de S[key]) */
 async function syncTable(key){
   if(!SB) return;
@@ -418,13 +418,22 @@ async function syncTable(key){
          viejas cuya combinación de esas columnas ya NO viene en este lote (nunca las recién
          actualizadas). En tablas sin esa restricción (Asistencia, Calidad, etc., donde el lote
          SIEMPRE reemplaza el histórico completo) se conserva el borrado simple por rango de id. */
-      const payload=arr.map(o=>toDb(map,o));
+      const payloadBase=arr.map(o=>toDb(map,o));
+      const conflictKey=UPSERT_KEY[key];
+      const payload=conflictKey
+        ? [...new Map(payloadBase.map(row=>[conflictKey.map(col=>String(row[col]??"")).join("|"),row])).values()]
+        : payloadBase;
       const {data:antes}=await SB.from(table).select("id").order("id",{ascending:false}).limit(1);
       const maxIdAntes=antes&&antes.length? antes[0].id : 0;
-      let {error}=await SB.from(table).insert(payload);
-      let conflictCols=null;
+      let conflictCols=conflictKey||null;
+      let error;
+      if(conflictCols){
+        ({error}=await SB.from(table).upsert(payload,{onConflict:conflictCols.join(",")}));
+      }else{
+        ({error}=await SB.from(table).insert(payload));
+      }
       if(error && error.code==="23505"){
-        if(UPSERT_KEY[key]) conflictCols=UPSERT_KEY[key];
+        if(conflictKey) conflictCols=conflictKey;
         else{ const m=/Key \(([^)]+)\)=/.exec(error.details||""); conflictCols = m? m[1].split(",").map(s=>s.trim()) : ["rut"]; }
         ({error}=await SB.from(table).upsert(payload,{onConflict:conflictCols.join(",")}));
       }
@@ -444,11 +453,11 @@ async function syncTable(key){
   }catch(e){ console.error(e); toast("No se pudo sincronizar con la nube: "+e.message); }
 }
 /* Sube TODOS los módulos a la nube */
-async function syncToCloud(){
+async function syncToCloud(keys=Object.keys(TABLE_KEY)){
   if(!SB){ toast("La base de datos no está conectada."); return; }
   setCloudStatus("Subiendo…");
   try{
-    for(const key of Object.keys(TABLE_KEY)) await syncTable(key);
+    for(const key of keys) await syncTable(key);
     await pushConfig(); await pushTurnos();
     const now=new Date();
     const dateStr=now.toLocaleDateString("es-CL");
@@ -472,7 +481,15 @@ async function loadFromCloud(showToast){
     for(const key of Object.keys(TABLE_KEY)){
       const table=TABLE_KEY[key], map=FIELD_MAPS[key];
       const {data,error}=await SB.from(table).select("*"); if(error) throw error;
-      S[key]=(data||[]).map(r=>fromDb(map,r));
+      const filas=(data||[]).map(r=>fromDb(map,r));
+      /* Conserva filas locales que todavía no llegaron a la nube, para que una descarga
+         parcial no haga desaparecer un día recién importado. */
+      if(key==="asistencia"||key==="epaDiario"){
+        const local=S[key]||[];
+        const cloudKeys=new Set(filas.map(r=>normRut(r.rut)+"|"+(r.fecha||"")));
+        const pendientes=local.filter(r=>!cloudKeys.has(normRut(r.rut)+"|"+(r.fecha||"")));
+        S[key]=filas.concat(pendientes);
+      }else S[key]=filas;
     }
     await pullConfig(); await pullTurnos();
     recalcAsistencia(); save();
@@ -705,7 +722,23 @@ async function importWB(wb, nombreArchivo){
   recalcAsistencia();
   save(); render(CUR);
   toast(log.length? "Importado: "+log.join(" · ") : "No se reconocieron hojas de datos en el archivo.");
-  if(log.length){ await syncToCloud(); await registrarHistorial(nombreArchivo, log); }
+  if(log.length){
+    const keys=log.flatMap(item=>{
+      if(item.startsWith("Ejecutivos")) return ["ejecutivos"];
+      if(item.startsWith("Asistencia")) return ["asistencia"];
+      if(item.startsWith("KPI")) return ["kpi"];
+      if(item.startsWith("Calidad")) return ["calidad"];
+      if(item.startsWith("EPA Histórico")) return ["epaHist"];
+      if(item.startsWith("EPA Diario")) return ["epaDiario"];
+      if(item.startsWith("EPA (")) return ["epa"];
+      if(item.startsWith("Outbound")) return ["outbound"];
+      if(item.startsWith("Feedback")) return ["feedback"];
+      if(item.startsWith("Compromisos")) return ["compromisos"];
+      if(item.startsWith("Incidencias")) return ["incidencias"];
+      return [];
+    });
+    await syncToCloud([...new Set(keys)]); await registrarHistorial(nombreArchivo, log);
+  }
 }
 /* Si Nombre llegó vacío o como texto de fórmula sin calcular (el archivo no se guardó en Excel
    antes de subirlo), lo completa igual buscando por Rut en Ejecutivos — red de seguridad. */
@@ -932,8 +965,11 @@ async function ejecutarImportEpa(fmt, matched, nuevas, huecos, conflictos, inclu
   }
 
   if(nuevas.length){
-    const payload=nuevas.map(n=>({rut:n.rut, nombre:n.nombre, fecha:n.fecha, [fmt.campo]:n.valor}));
-    await SB.from("progesys_epa_diario").insert(payload);
+    const payloadPorClave={};
+    nuevas.forEach(n=>{ payloadPorClave[normRut(n.rut)+"|"+n.fecha]={rut:n.rut, nombre:n.nombre, fecha:n.fecha, [fmt.campo]:n.valor}; });
+    const payload=Object.values(payloadPorClave);
+    const {error}=await SB.from("progesys_epa_diario").upsert(payload,{onConflict:"rut,fecha"});
+    if(error) throw error;
   }
   for(const h of huecos){
     await SB.from("progesys_epa_diario").update({[fmt.campo]:h.valor}).eq("rut", h.rut).eq("fecha", h.fecha);
