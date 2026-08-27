@@ -209,9 +209,9 @@ const DEFAULT_CONFIG = {
 };
 /* Catálogo de indicadores del Dashboard: el Coordinador puede prender/apagar cuáles se muestran */
 const INDICADORES=[
-  {k:"adherencia",n:"Adherencia"},{k:"contactabilidad",n:"Contactabilidad"},
+  {k:"adherencia",n:"Adherencia"},{k:"contactabilidad",n:"Contactabilidad Out"},
   {k:"e1snl",n:"EPA 1 SNL"},{k:"e1ep",n:"EPA 1 EP"},{k:"e2snl",n:"EPA 2 SNL"},{k:"e2ep",n:"EPA 2 EP"},
-  {k:"calidad",n:"Calidad (prom.)"},{k:"tmo",n:"TMO prom. (seg)"},
+  {k:"tmo",n:"TMO prom. (seg)"},
   {k:"banoMin",n:"Baño (min prom)"},{k:"banoVec",n:"Baño (veces prom)"},
   {k:"descMin",n:"Descansos (min prom)"},{k:"colMin",n:"Colación (min prom)"},
   {k:"atrasosN",n:"Atrasos (cantidad)"},{k:"atrasosMin",n:"Atrasos (min total)"},
@@ -1146,7 +1146,7 @@ function exportAll(){
     const m=MODULES.find(x=>x.key===k); if(m) add(m.name.replace(/ \(.*\)/,"").slice(0,31), m.cols, S[k]); });
   if(S.turnosMes.filas.length){ const t=S.turnosMes;
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["N°","NOMBRE",...t.dias],["","",...t.letras],...t.filas.map(f=>[f.n,f.nombre,...f.turnos])]),"Turnos"); }
-  const cfg=[["Indicador","Meta"],["Contactabilidad",S.config.metas.contactabilidad],["Calidad",S.config.metas.calidad],["Adherencia",S.config.metas.adherencia],["TMO (seg)",S.config.metas.tmo],["EPA 1",S.config.metas.epa1],["EPA 2",S.config.metas.epa2],[],["Turno","Inicio","Término","Colación (min)","Hrs netas","Descripción"],...S.config.turnos.map(t=>[t.t,t.ini,t.fin,t.col,t.hrs,t.desc])];
+  const cfg=[["Indicador","Meta"],["Contactabilidad Out",S.config.metas.contactabilidad],["Calidad",S.config.metas.calidad],["Adherencia",S.config.metas.adherencia],["TMO (seg)",S.config.metas.tmo],["EPA 1",S.config.metas.epa1],["EPA 2",S.config.metas.epa2],[],["Turno","Inicio","Término","Colación (min)","Hrs netas","Descripción"],...S.config.turnos.map(t=>[t.t,t.ini,t.fin,t.col,t.hrs,t.desc])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cfg),"Config");
   XLSX.writeFile(wb,"PROGESYS_Callcenter.xlsx");
 }
@@ -1487,10 +1487,10 @@ function renderDash(el){
     </div>
   </details>` : ""}
   <div class="cards">
-    ${card("adherencia","Adherencia",G.adherencia)} ${card("contactabilidad","Contactabilidad",G.contactabilidad)}
+    ${card("adherencia","Adherencia",G.adherencia)} ${card("contactabilidad","Contactabilidad Out",G.contactabilidad)}
     ${card("e1snl","EPA 1 SNL",G.e1snl)} ${card("e1ep","EPA 1 EP",G.e1ep)}
     ${card("e2snl","EPA 2 SNL",G.e2snl)} ${card("e2ep","EPA 2 EP",G.e2ep)}
-    ${card("calidad","Calidad (prom.)",G.calidad)} ${card("tmo","TMO prom. (seg)",G.tmo)}
+    ${card("tmo","TMO prom. (seg)",G.tmo)}
   </div>
   <div class="cards">
     ${card("tipificaciones","Tipificaciones",G.tipificaciones)}
@@ -1563,7 +1563,7 @@ function renderDash(el){
       ${card("e1ep","EPA 1 EP",G2.e1ep)} ${card("e2ep","EPA 2 EP",G2.e2ep)}
     </div>
     <div style="font-size:12px;color:var(--ink-faint);background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:10px 14px;margin-top:4px">
-      Contactabilidad, TMO, Calidad y Tipificaciones se muestran arriba solo a nivel mensual: las hojas de origen (KPI_Mensual, Calidad, Outbound) no traen una fecha por registro.
+      Contactabilidad Out, TMO, Calidad y Tipificaciones se muestran arriba solo a nivel mensual: las hojas de origen (KPI_Mensual, Calidad, Outbound) no traen una fecha por registro.
     </div>
     ${ultimasFechas.length? `<div class="tblwrap" style="margin-top:16px"><table>
       <thead><tr><th>Fecha</th><th style="text-align:right">Adherencia</th><th style="text-align:right">Atrasos</th><th style="text-align:right">EPA 1 SNL</th><th style="text-align:right">EPA 1 EP</th></tr></thead>
@@ -1661,7 +1661,6 @@ function renderDashEjec(el){
   const e=execs.find(x=>x.nombre===SEL_EXEC)||{};
   const ficha=S.ejecutivos.find(x=>x.nombre===SEL_EXEC)||{};
   const asis=S.asistencia.filter(r=>mismoExec(r,e));
-  const cal=S.calidad.filter(r=>mismoExec(r,e));
   const hist=S.epaHist.filter(r=>mismoExec(r,e)).sort((a,b)=>String(a.mes).localeCompare(String(b.mes)));
   const epaDia=S.epaDiario.filter(r=>mismoExec(r,e)).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
   const card=(n,v,meta,dir,f)=>{ const L=light(v,meta,dir); return `<div class="card"><div class="k">${n}<span class="dot ${L}"></span></div><div class="v">${f(v)}</div><div class="m">Meta ${dir===1&&meta<=1?pct0(meta):f(meta)}</div></div>`; };
@@ -1727,11 +1726,10 @@ function renderDashEjec(el){
   </div>
   <div class="cards">
     ${card("Adherencia",e.adh,M.adherencia,1,pct0)}
-    ${card("Contactabilidad",e.contact,M.contactabilidad,1,pct0)}
+    ${card("Contactabilidad Out",e.contact,M.contactabilidad,1,pct0)}
     ${card("EPA 1 SNL",e.e1snl,M.epa1,1,pct0)} ${card("EPA 2 SNL",e.e2snl,M.epa2,1,pct0)}
     ${card("EPA 1 EP",e.e1ep,M.epa1,1,pct0)} ${card("EPA 2 EP",e.e2ep,M.epa2,1,pct0)}
     ${card("TMO (seg)",e.tmo,M.tmo,-1,v=>fx(v,0))}
-    ${card("Calidad prom.",avg(cal.map(r=>r.puntaje)),M.calidad,1,v=>fx(v))}
   </div>
   <div class="grid-2">
     <div class="panel"><h2>Asistencia del mes · ${asis.length} días</h2>
@@ -1800,7 +1798,7 @@ function renderConfig(el){
   el.innerHTML=`
   <div class="panel"><h2>Metas de desempeño</h2>
     <div class="form" style="background:var(--bg);border-color:var(--line)">
-      ${row("contactabilidad","Contactabilidad (0–1)",M.contactabilidad,"0.01")}
+      ${row("contactabilidad","Contactabilidad Out (0–1)",M.contactabilidad,"0.01")}
       ${row("adherencia","Adherencia (0–1)",M.adherencia,"0.01")}
       ${row("calidad","Calidad (puntaje /100)",M.calidad,"1")}
       ${row("tmo","TMO meta (segundos)",M.tmo,"1")}
