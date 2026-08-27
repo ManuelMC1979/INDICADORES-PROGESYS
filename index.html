@@ -1185,7 +1185,17 @@ function byExec(){
   S.asistencia.forEach(r=>{ const k=keyOf(r.rut,r.nombre); (acc[k]=acc[k]||{adh:[],ban:[],atr:0,atrN:0}).adh.push(r.adh); acc[k].ban.push(r.banoMin); acc[k].atr+=r.atrasoMin??0; if((r.atrasoMin??0)>0)acc[k].atrN++; g(r.rut,r.nombre); });
   Object.entries(acc).forEach(([k,a])=>{ if(map[k]){ map[k].adh=avg(a.adh); map[k].banoMin=avg(a.ban); map[k].atrasoMin=a.atr; map[k].atrasosN=a.atrN; } });
   S.kpi.forEach(r=>{ const o=g(r.rut,r.nombre); o.contact=r.contact; o.tmo=r.tmo; o.llamadas=r.llamadas; if(o.adh==null)o.adh=r.adh; });
+  const accEpaDia={};
+  S.epaDiario.forEach(r=>{ const k=keyOf(r.rut,r.nombre); const a=accEpaDia[k]=accEpaDia[k]||{e1snl:[],e2snl:[],e1ep:[],e2ep:[]}; a.e1snl.push(r.e1snl); a.e2snl.push(r.e2snl); a.e1ep.push(r.e1ep); a.e2ep.push(r.e2ep); g(r.rut,r.nombre); });
   S.epa.forEach(r=>{ const o=g(r.rut,r.nombre); o.e1snl=r.e1snl; o.e2snl=r.e2snl; o.e1ep=r.e1ep; o.e2ep=r.e2ep; });
+  /* Si no hay resumen mensual cargado (hoja EPA), se completa con el promedio de EPA diario del ejecutivo */
+  Object.entries(accEpaDia).forEach(([k,a])=>{
+    const o=map[k]; if(!o) return;
+    if(o.e1snl==null) o.e1snl=avg(a.e1snl);
+    if(o.e2snl==null) o.e2snl=avg(a.e2snl);
+    if(o.e1ep==null) o.e1ep=avg(a.e1ep);
+    if(o.e2ep==null) o.e2ep=avg(a.e2ep);
+  });
   return Object.values(map).filter(o=>o.nombre);
 }
 /* Top 3 ejecutivos del mes en curso por promedio EPA 1 SNL + EPA 2 EP — usado tanto por el
