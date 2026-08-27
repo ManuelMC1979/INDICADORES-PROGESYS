@@ -685,38 +685,23 @@ async function importWB(wb, nombreArchivo){
     if(!rows.length) return;
     if(n.includes("instruccion")||n==="dashboard"||n.includes("dashboardejec")) return;
 
-    /* Detección por encabezados PRIMERO: reconoce el libro-modelo de Ejecutivos y el de
-       Asistencia (con fórmulas) aunque la hoja se llame "Hoja1" en vez del nombre del módulo. */
+    /* Importar Excel matriz: esta importación se restringe a Asistencia y KPI Mensual;
+       el resto de las hojas del libro (Ejecutivos, Config, Turnos, Calidad, EPA,
+       EPA Histórico, Outbound, Feedback, Compromisos, Incidencias) se ignora a propósito.
+       Detección por encabezados PRIMERO: reconoce el libro-modelo de Asistencia (con fórmulas)
+       aunque la hoja se llame "Hoja1" en vez del nombre del módulo. */
     const heads=headSet(rows);
     const hasAll=arr=>arr.every(a=>heads.includes(a));
     const hasAny=arr=>arr.some(a=>heads.includes(a));
 
-    if(hasAll(["rut"]) && heads.includes("nombrecompleto")){
-      S.ejecutivos=mapRows(rows,{rut:["rut"],nombre:["nombrecompleto","nombre"],supervisor:["supervisor"],equipo:["equipo"],cargo:["cargo"],ingreso:["fechaingreso"],jornada:["jornada"],estado:["estado"],correo:["correo"],telefono:["telefono"],obs:["observaciones"]},{ingreso:"date"});
-      log.push(`Ejecutivos (${S.ejecutivos.length})`); return;
-    }
     if(hasAll(["horaingreso","horasalida"]) && hasAny(["adherencia","turnodeldia","desviaciondelturno","tiempototaldescanso","salidaanticipada"])){
       importAsistenciaFormula(rows); log.push(`Asistencia (${S.asistencia.length})`); return;
     }
     if(hasAll(["horaingreso","horasalida"])){ importAsistencia(rows); log.push(`Asistencia (${S.asistencia.length})`); return; }
 
-    /* Detección por nombre de hoja para el resto de módulos */
-    if(n.includes("config")){ importConfig(rows); log.push("Config"); return; }
-    if(n.startsWith("turno")){ importTurnos(name,rows); log.push("Turnos ("+name+")"); return; }
-    if(n.includes("ejecutivo")&&!n.includes("dashboard")){ S.ejecutivos=mapRows(rows,{rut:["rut"],nombre:["nombrecompleto","nombre"],supervisor:["supervisor"],equipo:["equipo"],cargo:["cargo"],ingreso:["fechaingreso"],jornada:["jornada"],estado:["estado"],correo:["correo"],telefono:["telefono"],obs:["observaciones"]},{ingreso:"date"}); log.push(`Ejecutivos (${S.ejecutivos.length})`); return; }
+    /* Detección por nombre de hoja: solo Asistencia y KPI */
     if(n.includes("asistencia")){ importAsistencia(rows); log.push(`Asistencia (${S.asistencia.length})`); return; }
     if(n.includes("kpi")){ S.kpi=mapRows(rows,{rut:["rut"],nombre:["nombre"],llamadas:["llamadas"],saliente:["saliente"],tmo:["tmoseg","tmo"],disp:["disponibilidad"],adh:["adherencia"],ocup:["ocupacion"],transf:["transferencias"],cumple:["cumplimientometa","cumplimiento"],supervisor:["supervisorauto","supervisor"],contact:["contactabilidadout","contactabilidad"],tipificaciones:["tipificaciones","tipificacion"]},{llamadas:"n",saliente:"n",tmo:"n",disp:"n",adh:"n",ocup:"n",transf:"n",contact:"n",tipificaciones:"n"}); log.push(`KPI (${S.kpi.length})`); return; }
-    if(n.includes("calidad")){ S.calidad=mapRows(rows,{fecha:["fecha"],auditor:["auditor"],supervisor:["supervisor"],rut:["rut"],nombre:["nombre"],tipo:["tipodeauditoria","tipo"],puntaje:["puntaje0100","puntaje"],critico:["errorcritico"],obs:["observaciones"],estado:["estado"]},{fecha:"date",puntaje:"n"}); log.push(`Calidad (${S.calidad.length})`); return; }
-    if(n.includes("epahistorico")||n.includes("historico")){ S.epaHist=mapRows(rows,{mes:["mes"],rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],supervisor:["supervisor"],obs:["observaciones"]},{mes:"date",e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n"}).filter(r=>r.rut); log.push(`EPA Histórico (${S.epaHist.length})`); return; }
-    if(n.includes("epadiario")||n.includes("diarioepa")||(n.includes("epa")&&n.includes("diario"))){
-      const nuevos=mapRows(rows,{fecha:["fecha"],rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],supervisor:["supervisorauto","supervisor"],obs:["observaciones"]},{fecha:"date",e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n"}).filter(r=>r.rut);
-      mergeEpaDiario(nuevos); log.push(`EPA Diario (${nuevos.length})`); return;
-    }
-    if(n==="epa"||n.startsWith("epa")){ S.epa=mapRows(rows,{rut:["rut"],nombre:["nombre"],e1snl:["epa1snl"],e2snl:["epa2snl"],e1ep:["epa1ep"],e2ep:["epa2ep"],transferencia:["transferencia"],obs:["observaciones"],supervisor:["supervisorauto","supervisor"]},{e1snl:"n",e2snl:"n",e1ep:"n",e2ep:"n",transferencia:"n"}); log.push(`EPA (${S.epa.length})`); return; }
-    if(n.includes("outbound")){ S.outbound=mapRows(rows,{rut:["rut"],nombre:["nombre"],contactados:["contactados"],noContactados:["nocontactados"],pctContacto:["contacto"],obs:["observaciones"]},{contactados:"n",noContactados:"n",pctContacto:"n"}); log.push(`Outbound (${S.outbound.length})`); return; }
-    if(n.includes("feedback")||n.includes("escucha")){ S.feedback=mapRows(rows,{fecha:["fecha"],hora:["hora"],supervisor:["supervisor"],rut:["rut"],nombre:["nombre"],tipo:["tipo"],idr:["id"],tema:["tematratado","tema"],conclusiones:["conclusiones"],resultado:["resultado"],obs:["observaciones"]},{fecha:"date",hora:"time"}).filter(r=>r.fecha||r.nombre||r.tema); log.push(`Feedback (${S.feedback.length})`); return; }
-    if(n.includes("compromiso")){ S.compromisos=mapRows(rows,{fecha:["fecha"],rut:["rut"],nombre:["nombre"],supervisor:["supervisor"],compromiso:["compromiso"],fComp:["fechacompromiso"],fVenc:["fechavencimiento"],estado:["estado"],evidencia:["evidencia"],obs:["observaciones"]},{fecha:"date",fComp:"date",fVenc:"date"}).filter(r=>r.fecha||r.nombre||r.compromiso); log.push(`Compromisos (${S.compromisos.length})`); return; }
-    if(n.includes("incidencia")){ S.incidencias=mapRows(rows,{fecha:["fecha"],rut:["rut"],nombre:["nombre"],tipo:["tipo"],obs:["observaciones"]},{fecha:"date"}).filter(r=>r.fecha||r.rut||r.tipo); log.push(`Incidencias (${S.incidencias.length})`); return; }
   });
   backfillNombres();
   recalcAsistencia();
