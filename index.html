@@ -645,7 +645,7 @@ const MOD = Object.fromEntries(MODULES.map(m=>[m.id,m]));
 function buildNav(){
   const nav=document.getElementById("nav"); let g=""; let h="";
   let visibles=MODULES.filter(m=>!m.hidden);
-  if(SESION && SESION.rol==="ejecutivo") visibles=MODULES.filter(m=>m.id==="dashEjec"||m.id==="turnos-app");
+  if(SESION && SESION.rol==="ejecutivo") visibles=MODULES.filter(m=>m.id==="dashEjec");
   visibles.forEach(m=>{ if(m.grp!==g){ g=m.grp; h+=`<div class="grp">${g}</div>`; }
     h+=`<button data-p="${m.id}"><span class="ic">${m.ic}</span><span class="tx">${m.name}</span></button>`; });
   nav.innerHTML=h;
