@@ -678,12 +678,12 @@ document.getElementById("fileInputCrudo").addEventListener("change",e=>{
   r.readAsArrayBuffer(f);
 });
 async function importWB(wb, nombreArchivo){
-  let log=[];
-  wb.SheetNames.forEach(name=>{
+  let log=[], epaTocado=false;
+  for(const name of wb.SheetNames){
     const n=norm(name), ws=wb.Sheets[name];
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
-    if(!rows.length) return;
-    if(n.includes("instruccion")||n==="dashboard"||n.includes("dashboardejec")) return;
+    if(!rows.length) continue;
+    if(n.includes("instruccion")||n==="dashboard"||n.includes("dashboardejec")) continue;
 
     /* Importar Excel matriz: esta importación se restringe a Asistencia y KPI Mensual;
        el resto de las hojas del libro (Ejecutivos, Config, Turnos, Calidad, EPA,
@@ -695,14 +695,38 @@ async function importWB(wb, nombreArchivo){
     const hasAny=arr=>arr.some(a=>heads.includes(a));
 
     if(hasAll(["horaingreso","horasalida"]) && hasAny(["adherencia","turnodeldia","desviaciondelturno","tiempototaldescanso","salidaanticipada"])){
-      importAsistenciaFormula(rows); log.push(`Asistencia (${S.asistencia.length})`); return;
+      importAsistenciaFormula(rows); log.push(`Asistencia (${S.asistencia.length})`); continue;
     }
-    if(hasAll(["horaingreso","horasalida"])){ importAsistencia(rows); log.push(`Asistencia (${S.asistencia.length})`); return; }
+    if(hasAll(["horaingreso","horasalida"])){ importAsistencia(rows); log.push(`Asistencia (${S.asistencia.length})`); continue; }
 
     /* Detección por nombre de hoja: solo Asistencia y KPI */
-    if(n.includes("asistencia")){ importAsistencia(rows); log.push(`Asistencia (${S.asistencia.length})`); return; }
-    if(n.includes("kpi")){ S.kpi=mapRows(rows,{rut:["rut"],nombre:["nombre"],llamadas:["llamadas"],saliente:["saliente"],tmo:["tmoseg","tmo"],disp:["disponibilidad"],adh:["adherencia"],ocup:["ocupacion"],transf:["transferencias"],cumple:["cumplimientometa","cumplimiento"],supervisor:["supervisorauto","supervisor"],contact:["contactabilidadout","contactabilidad"],tipificaciones:["tipificaciones","tipificacion"]},{llamadas:"n",saliente:"n",tmo:"n",disp:"n",adh:"n",ocup:"n",transf:"n",contact:"n",tipificaciones:"n"}); log.push(`KPI (${S.kpi.length})`); return; }
-  });
+    if(n.includes("asistencia")){ importAsistencia(rows); log.push(`Asistencia (${S.asistencia.length})`); continue; }
+    if(n.includes("kpi")){
+      const kpiAnterior=S.kpi;
+      const kpiNuevo=mapRows(rows,{rut:["rut"],nombre:["nombre"],llamadas:["llamadas"],saliente:["saliente"],tmo:["tmoseg","tmo"],disp:["disponibilidad"],adh:["adherencia"],ocup:["ocupacion"],transf:["transferencias"],cumple:["cumplimientometa","cumplimiento"],supervisor:["supervisorauto","supervisor"],contact:["contactabilidadout","contactabilidad"],tipificaciones:["tipificaciones","tipificacion"],transferenciaEpa:["transferenciaepa"]},{llamadas:"n",saliente:"n",tmo:"n",disp:"n",adh:"n",ocup:"n",transf:"n",contact:"n",tipificaciones:"n",transferenciaEpa:"n"});
+      /* La hoja KPI_Mensual va cambiando de columnas con el tiempo (p.ej. Tipificaciones y
+         Transferencia EPA se agregaron recién). Si a esta versión del archivo le falta una
+         columna que otra vía (crudo, importación previa) ya había cargado, no se debe borrar:
+         se conserva el valor anterior para cualquier campo que este archivo no traiga. */
+      S.kpi=kpiNuevo.map(r=>{
+        const prev=kpiAnterior.find(p=>normRut(p.rut)===normRut(r.rut));
+        if(!prev) return r;
+        const merged={...r};
+        Object.keys(merged).forEach(k=>{ if((merged[k]===null||merged[k]==="") && prev[k]!=null && prev[k]!=="") merged[k]=prev[k]; });
+        return merged;
+      });
+      log.push(`KPI (${S.kpi.length})`);
+      /* "TRANSFERENCIA EPA" es nueva en KPI_Mensual: se guarda en progesys_epa (mismo destino
+         que ya usa el importador de reportes crudos "Transferencia a EPA"), no en progesys_kpi. */
+      const conTransferencia=S.kpi.filter(r=>r.rut && r.transferenciaEpa!=null);
+      if(conTransferencia.length){
+        for(const r of conTransferencia) await SB.from("progesys_epa").update({transferencia:r.transferenciaEpa}).eq("rut", r.rut);
+        log.push(`Transferencia EPA (${conTransferencia.length})`);
+        epaTocado=true;
+      }
+      continue;
+    }
+  }
   backfillNombres();
   recalcAsistencia();
   save(); render(CUR);
@@ -724,6 +748,7 @@ async function importWB(wb, nombreArchivo){
     });
     await syncToCloud([...new Set(keys)]); await registrarHistorial(nombreArchivo, log);
   }
+  if(epaTocado){ await loadFromCloud(false); render(CUR); }
 }
 /* Si Nombre llegó vacío o como texto de fórmula sin calcular (el archivo no se guardó en Excel
    antes de subirlo), lo completa igual buscando por Rut en Ejecutivos — red de seguridad. */
