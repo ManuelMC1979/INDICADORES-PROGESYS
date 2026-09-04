@@ -1111,7 +1111,8 @@ function importAsistenciaFormula(rows){
     colIni:find(["iniciocomida","iniciocolacion"]), colFin:find(["fincomid","fincolacion"]),
     d1:find(["descanso1"]), d2:find(["descanso2"]),
     banoMin:find(["bano"]), banoVec:find(["banoveces"]),
-    capMin:find(["capacitacion"]), obs:find(["observaciones"])
+    capMin:find(["capacitacion"]), obs:find(["observaciones"]),
+    turno:find(["turnodeldia"]), adh:find(["adherencia"])
   };
   if(I.banoVec===I.banoMin) I.banoVec=heads.findIndex((h,j)=>j>I.banoMin&&h&&h.startsWith("bano")&&j!==I.banoMin);
   const nuevos=[];
@@ -1125,8 +1126,14 @@ function importAsistenciaFormula(rows){
     const d1=num(I.d1>=0?r[I.d1]:null), d2=num(I.d2>=0?r[I.d2]:null);
     const ejec=S.ejecutivos.find(e=>normRut(e.rut)===normRut(rut));
     const nombre=ejec? ejec.nombre : "";
-    const turno=turnoDelDia(nombre,fecha);
+    /* El libro modelo ya trae Turno del día y Adherencia calculados por sus propias fórmulas
+       (cruzando contra su propia hoja Turno, que esta app ya no importa). Se usa ese valor
+       cacheado en la celda como fuente de verdad, y turnoDelDia()/el cálculo propio quedan
+       solo como respaldo para archivos que no traigan esas columnas. */
+    const turnoSheet=I.turno>=0? clean(r[I.turno]) : "";
+    const turno=turnoSheet || turnoDelDia(nombre,fecha);
     const turnoCfg=turno? S.config.turnos.find(t=>t.t===turno) : null;
+    const adhSheet=I.adh>=0? num(r[I.adh]) : null;
     /* Réplica exacta (con precisión de segundos) de las fórmulas del libro modelo */
     let efectivo=null;
     if(hInF!=null&&hOutF!=null){ let base=(hOutF-hInF)*24; if(colIniF!=null&&colFinF!=null) base-=(colFinF-colIniF)*24; base-=((d1||0)+(d2||0))/60; efectivo=Math.round(base*100)/100; }
@@ -1139,8 +1146,8 @@ function importAsistenciaFormula(rows){
     let estado=""; if(fecha){ if(hInF==null) estado="Ausente"; else if(atrasoMin!=null) estado=atrasoMin>0?"Atrasado":"Puntual"; }
     let salidaAnt=null;
     if(hOutF!=null&&turnoCfg){ const finF=timeFrac(turnoCfg.fin); salidaAnt=Math.max(0,Math.round((finF-hOutF)*1440)); }
-    let adh=null;
-    if(atrasoMin!=null&&salidaAnt!=null&&turnoCfg){ const iniF=timeFrac(turnoCfg.ini), finF=timeFrac(turnoCfg.fin); const jornada=Math.round((finF-iniF)*1440); if(jornada>0) adh=Math.max(0,1-(atrasoMin+salidaAnt+Math.max(0,desvTurno||0))/jornada); }
+    let adh=adhSheet;
+    if(adh==null && atrasoMin!=null&&salidaAnt!=null&&turnoCfg){ const iniF=timeFrac(turnoCfg.ini), finF=timeFrac(turnoCfg.fin); const jornada=Math.round((finF-iniF)*1440); if(jornada>0) adh=Math.max(0,1-(atrasoMin+salidaAnt+Math.max(0,desvTurno||0))/jornada); }
     const o={
       fecha, rut, nombre,
       hIn:excelTime(hInRaw), hOut:excelTime(hOutRaw), colIni:excelTime(colIniRaw), colFin:excelTime(colFinRaw),
