@@ -813,6 +813,13 @@ function detectarFormatoCrudo(rows){
     return {tipo:"transferencia", idxTotal};
   }
 
+  if(header1.includes("%Tipif")){
+    let idxTotal=-1;
+    for(let i=header1.length-1;i>=0;i--){ if(header1[i]==="%Tipif"){ idxTotal=i; break; } }
+    if(idxTotal<0) return null;
+    return {tipo:"tipificaciones", idxTotal};
+  }
+
   /* La columna de la métrica no siempre está en el índice 1: cuando el export del CRM
      incluye una columna extra "SERVICIO" (desglose Total/SNL/EP por agente) todo se
      corre un lugar. Se busca la métrica por nombre en vez de asumir su posición. */
@@ -848,6 +855,15 @@ function parseReporteTransferencia(rows, fmt){
   }
   return resultado;
 }
+function parseReporteTipificaciones(rows, fmt){
+  const resultado=[];
+  for(const row of rows.slice(2)){
+    const nombreCrudo=row[0];
+    if(!nombreCrudo || typeof nombreCrudo!=="string" || nombreCrudo.startsWith("Filtros")) continue;
+    resultado.push({nombreCrudo, candidatos:cruzarEjecutivoPorNombre(nombreCrudo), total:row[fmt.idxTotal]});
+  }
+  return resultado;
+}
 
 async function procesarReporteCrudo(wb){
   const ws=wb.Sheets[wb.SheetNames[0]];
@@ -856,6 +872,7 @@ async function procesarReporteCrudo(wb){
   const fmt=detectarFormatoCrudo(rows);
   if(!fmt){ toast("No se reconoció el formato de este archivo."); return; }
   if(fmt.tipo==="transferencia") abrirModalTransferencia(parseReporteTransferencia(rows,fmt));
+  else if(fmt.tipo==="tipificaciones") abrirModalTipificaciones(parseReporteTipificaciones(rows,fmt));
   else await abrirModalEpa(parseReporteEpa(rows,fmt), fmt);
 }
 
@@ -895,6 +912,40 @@ async function ejecutarImportTransferencia(matched){
   }
   cerrarModalCrudo();
   toast(`Transferencia a EPA actualizada: ${ok}/${matched.length} ejecutivos.`);
+  await loadFromCloud(false); render(CUR);
+}
+
+function abrirModalTipificaciones(resultado){
+  const matched=resultado.filter(r=>r.candidatos.length===1);
+  const sinCruce=resultado.filter(r=>r.candidatos.length!==1);
+  const filas=matched.map(r=>`<tr><td>${r.candidatos[0].nombre}</td><td style="text-align:right">${pct(r.total)}</td></tr>`).join("");
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="modalCrudo" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--white);border-radius:12px;max-width:520px;width:100%;max-height:85vh;overflow:auto;padding:20px">
+        <h2 style="margin:0 0 4px;font-size:15px;color:var(--ink-strong)">Importar Tipificaciones</h2>
+        <p style="font-size:12px;color:var(--ink-soft);margin:0 0 12px">Se actualiza el % de Tipificaciones (mensual) de cada ejecutivo. ${matched.length}/${resultado.length} cruzados.</p>
+        <table style="width:100%;font-size:13px"><thead><tr><th style="text-align:left">Ejecutivo</th><th style="text-align:right">% Tipif.</th></tr></thead>
+        <tbody>${filas}</tbody></table>
+        ${filaSinCruceHtml(sinCruce)}
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+          <button class="btn btn-ghost btn-sm" onclick="cerrarModalCrudo()">Cancelar</button>
+          <button class="btn btn-teal btn-sm" id="btnConfirmarTipificaciones">Confirmar e importar</button>
+        </div>
+      </div>
+    </div>`);
+  document.getElementById("btnConfirmarTipificaciones").onclick=()=>ejecutarImportTipificaciones(matched);
+}
+async function ejecutarImportTipificaciones(matched){
+  document.querySelectorAll("#modalCrudo button").forEach(b=>b.disabled=true);
+  let ok=0;
+  for(const r of matched){
+    if(r.total===null||r.total===undefined) continue;
+    const {error}=await SB.from("progesys_kpi").update({tipificaciones:r.total}).eq("rut", r.candidatos[0].rut);
+    if(!error) ok++;
+  }
+  cerrarModalCrudo();
+  toast(`Tipificaciones actualizadas: ${ok}/${matched.length} ejecutivos.`);
   await loadFromCloud(false); render(CUR);
 }
 
