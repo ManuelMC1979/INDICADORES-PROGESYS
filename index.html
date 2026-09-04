@@ -813,13 +813,17 @@ function detectarFormatoCrudo(rows){
     return {tipo:"transferencia", idxTotal};
   }
 
-  const metrica=header1[1];
-  if(metrica==="%SATISFACCION"||metrica==="%RESOLUCION"){
+  /* La columna de la métrica no siempre está en el índice 1: cuando el export del CRM
+     incluye una columna extra "SERVICIO" (desglose Total/SNL/EP por agente) todo se
+     corre un lugar. Se busca la métrica por nombre en vez de asumir su posición. */
+  const idxMetrica=header1.findIndex(h=>h==="%SATISFACCION"||h==="%RESOLUCION");
+  if(idxMetrica>=0){
+    const metrica=header1[idxMetrica];
     const servicio=/SERVICIO es EP/.test(filtrosTxt) ? "EP" : /SERVICIO es SNL/.test(filtrosTxt) ? "SNL" : null;
     if(!servicio) return null;
     const campo=(metrica==="%SATISFACCION"?"e1":"e2")+servicio.toLowerCase();
-    const fechas=header0.slice(1,-1).map(v=>excelDate(v));
-    return {tipo:"epa", campo, fechas};
+    const fechas=header0.slice(idxMetrica,-1).map(v=>excelDate(v));
+    return {tipo:"epa", campo, fechas, idxMetrica};
   }
   return null;
 }
@@ -830,7 +834,7 @@ function parseReporteEpa(rows, fmt){
     const nombreCrudo=row[0];
     if(!nombreCrudo || typeof nombreCrudo!=="string" || nombreCrudo==="Total" || nombreCrudo.startsWith("Filtros")) continue;
     const total=row[row.length-1];
-    const diarios=fmt.fechas.map((f,i)=>({fecha:f, valor:row[1+i]}));
+    const diarios=fmt.fechas.map((f,i)=>({fecha:f, valor:row[fmt.idxMetrica+i]}));
     resultado.push({nombreCrudo, candidatos:cruzarEjecutivoPorNombre(nombreCrudo), total, diarios});
   }
   return resultado;
