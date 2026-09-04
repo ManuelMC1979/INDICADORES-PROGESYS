@@ -1217,7 +1217,7 @@ function exportAll(){
 const avg = a => { const v=a.filter(x=>x!=null&&!isNaN(x)); return v.length? v.reduce((s,x)=>s+x,0)/v.length : null; };
 const sum = a => a.filter(x=>x!=null&&!isNaN(x)).reduce((s,x)=>s+x,0);
 function metricsGlobal(){
-  const M=S.config.metas, A=S.asistencia, K=S.kpi, E=S.epa;
+  const M=S.config.metas, A=S.asistencia.filter(enMesActual), K=S.kpi, E=S.epa;
   const adh = avg(A.map(r=>r.adh)) ?? avg(K.map(r=>r.adh));
   const atrasos=A.filter(r=>(r.atrasoMin??0)>0);
   return {
@@ -1244,11 +1244,11 @@ function byExec(){
   S.ejecutivos.forEach(e=>{ map[keyOf(e.rut,e.nombre)]={rut:e.rut,nombre:e.nombre,supervisor:e.supervisor,equipo:e.equipo,cargo:e.cargo,estado:e.estado}; });
   const g=(rut,nombre)=>{ const k=keyOf(rut,nombre); if(!map[k]) map[k]={rut:rut||"",nombre:nombre||""}; return map[k]; };
   const acc={};
-  S.asistencia.forEach(r=>{ const k=keyOf(r.rut,r.nombre); (acc[k]=acc[k]||{adh:[],ban:[],atr:0,atrN:0}).adh.push(r.adh); acc[k].ban.push(r.banoMin); acc[k].atr+=r.atrasoMin??0; if((r.atrasoMin??0)>0)acc[k].atrN++; g(r.rut,r.nombre); });
+  S.asistencia.filter(enMesActual).forEach(r=>{ const k=keyOf(r.rut,r.nombre); (acc[k]=acc[k]||{adh:[],ban:[],atr:0,atrN:0}).adh.push(r.adh); acc[k].ban.push(r.banoMin); acc[k].atr+=r.atrasoMin??0; if((r.atrasoMin??0)>0)acc[k].atrN++; g(r.rut,r.nombre); });
   Object.entries(acc).forEach(([k,a])=>{ if(map[k]){ map[k].adh=avg(a.adh); map[k].banoMin=avg(a.ban); map[k].atrasoMin=a.atr; map[k].atrasosN=a.atrN; } });
   S.kpi.forEach(r=>{ const o=g(r.rut,r.nombre); o.contact=r.contact; o.tmo=r.tmo; o.llamadas=r.llamadas; if(o.adh==null)o.adh=r.adh; });
   const accEpaDia={};
-  S.epaDiario.forEach(r=>{ const k=keyOf(r.rut,r.nombre); const a=accEpaDia[k]=accEpaDia[k]||{e1snl:[],e2snl:[],e1ep:[],e2ep:[]}; a.e1snl.push(r.e1snl); a.e2snl.push(r.e2snl); a.e1ep.push(r.e1ep); a.e2ep.push(r.e2ep); g(r.rut,r.nombre); });
+  S.epaDiario.filter(enMesActual).forEach(r=>{ const k=keyOf(r.rut,r.nombre); const a=accEpaDia[k]=accEpaDia[k]||{e1snl:[],e2snl:[],e1ep:[],e2ep:[]}; a.e1snl.push(r.e1snl); a.e2snl.push(r.e2snl); a.e1ep.push(r.e1ep); a.e2ep.push(r.e2ep); g(r.rut,r.nombre); });
   S.epa.forEach(r=>{ const o=g(r.rut,r.nombre); o.e1snl=r.e1snl; o.e2snl=r.e2snl; o.e1ep=r.e1ep; o.e2ep=r.e2ep; });
   /* Si no hay resumen mensual cargado (hoja EPA), se completa con el promedio de EPA diario del ejecutivo */
   Object.entries(accEpaDia).forEach(([k,a])=>{
@@ -1532,7 +1532,7 @@ function renderDash(el){
       <div style="flex:1;min-width:200px">
         <div style="font-size:11px;letter-spacing:.2em;color:var(--teal-2);font-weight:700">PROGESYS · CALL CENTER</div>
         <div style="font-size:20px;font-weight:800;margin-top:4px">Dashboard — Vista Supervisor</div>
-        <div style="font-size:12.5px;opacity:.75;margin-top:5px">Ejecutivos activos: ${activos} · Registros de asistencia: ${S.asistencia.length} · Auditorías de calidad: ${S.calidad.length}</div>
+        <div style="font-size:12.5px;opacity:.75;margin-top:5px">Ejecutivos activos: ${activos} · Registros de asistencia (mes actual): ${S.asistencia.filter(enMesActual).length} · Auditorías de calidad: ${S.calidad.length}</div>
       </div>
       ${(esCoordinador||esSupervisor)? `<button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff" onclick="resumenTeams()">📋 Copiar resumen para Teams</button>` : ""}
     </div>
@@ -1690,6 +1690,20 @@ function bars(execs,key,meta){
     <div class="bar-track"><div class="bar-fill" style="width:${Math.min(e[key]*100,100)}%;${e[key]<meta?"background:linear-gradient(90deg,#E0A83A,#C9880A)":""}"></div></div>
     <span class="bar-val">${pct(e[key])}</span></div>`).join("");
 }
+function fechaDelRegistro(r){
+  const valor = r && (r.fecha || r.fec || r.fecha_hora || r.date || r.fecha_registro || r.fechaDia);
+  if(!valor) return null;
+  let fechaText = valor instanceof Date ? valor.toISOString().slice(0,10) : excelDate(valor);
+  if(!fechaText) return null;
+  const d = new Date(`${fechaText}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+function enMesActual(r){
+  const d = fechaDelRegistro(r);
+  if(!d) return true;
+  const hoy = new Date();
+  return d.getMonth()===hoy.getMonth() && d.getFullYear()===hoy.getFullYear();
+}
 
 /* ════════════════════════ Dashboard Ejecutivo ════════════════════════ */
 let INDICADORES_PANEL_ABIERTO=false;
@@ -1722,9 +1736,9 @@ function renderDashEjec(el){
   // IMPORTANTE: NO resetear SEL_EXEC si el usuario lo seleccionó manualmente
   const e=execs.find(x=>x.nombre===SEL_EXEC)||{};
   const ficha=S.ejecutivos.find(x=>x.nombre===SEL_EXEC)||{};
-  const asis=S.asistencia.filter(r=>mismoExec(r,e));
+  const asis=S.asistencia.filter(r=>mismoExec(r,e) && enMesActual(r));
   const hist=S.epaHist.filter(r=>mismoExec(r,e)).sort((a,b)=>String(a.mes).localeCompare(String(b.mes)));
-  const epaDia=S.epaDiario.filter(r=>mismoExec(r,e)).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
+  const epaDia=S.epaDiario.filter(r=>mismoExec(r,e) && enMesActual(r)).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
   const card=(n,v,meta,dir,f)=>{ const L=light(v,meta,dir); return `<div class="card"><div class="k">${n}<span class="dot ${L}"></span></div><div class="v">${f(v)}</div><div class="m">Meta ${dir===1&&meta<=1?pct0(meta):f(meta)}</div></div>`; };
   el.innerHTML=`
   ${previsualizando? `
